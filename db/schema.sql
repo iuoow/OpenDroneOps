@@ -159,7 +159,12 @@ CREATE TABLE commands (
   expires_at TIMESTAMPTZ NOT NULL,
   completed_at TIMESTAMPTZ,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (workspace_id, idempotency_key)
+  UNIQUE (workspace_id, idempotency_key),
+  CONSTRAINT commands_status_check CHECK (status IN (
+    'CREATED', 'VALIDATED', 'REJECTED', 'PUBLISH_PENDING', 'PUBLISHED',
+    'ACCEPTED', 'EXECUTING', 'SUCCEEDED', 'FAILED', 'TIMEOUT', 'CANCELED'
+  )),
+  CONSTRAINT commands_risk_level_check CHECK (risk_level IN ('LOW', 'MEDIUM', 'HIGH'))
 );
 CREATE UNIQUE INDEX commands_dji_correlation_unique
 ON commands(workspace_id, dji_tid, dji_bid, method)
@@ -192,11 +197,29 @@ CREATE TABLE outbox_events (
   locked_by TEXT,
   published_at TIMESTAMPTZ,
   last_error TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT outbox_status_check CHECK (status IN ('PENDING', 'PROCESSING', 'RETRY', 'PUBLISHED', 'FAILED')),
+  CONSTRAINT outbox_attempt_count_check CHECK (attempt_count >= 0)
 );
 CREATE INDEX outbox_pending_idx
-ON outbox_events(status, available_at, created_at)
-WHERE status IN ('PENDING', 'RETRY');
+ON outbox_events(status, available_at, locked_at, created_at)
+WHERE status IN ('PENDING', 'PROCESSING', 'RETRY');
+
+CREATE TABLE orphan_command_replies (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  workspace_id UUID NOT NULL REFERENCES workspaces(id),
+  tid TEXT NOT NULL,
+  bid TEXT NOT NULL,
+  method TEXT NOT NULL,
+  gateway_sn TEXT NOT NULL,
+  payload_hash TEXT NOT NULL,
+  payload JSONB NOT NULL,
+  received_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (workspace_id, tid, bid, method, payload_hash)
+);
+CREATE INDEX orphan_command_replies_received_idx
+ON orphan_command_replies(workspace_id, received_at DESC, id DESC);
 
 CREATE TABLE quarantine_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -87,6 +87,19 @@ func (b *MQTTBroker) Close(ctx context.Context) error {
 	return b.manager.Disconnect(ctx)
 }
 
+func (b *MQTTBroker) Publish(ctx context.Context, topic string, payload []byte, qos byte) error {
+	if b == nil || b.manager == nil {
+		return errors.New("MQTT broker is not connected")
+	}
+	if topic == "" || qos > 2 {
+		return errors.New("MQTT publish topic or QoS is invalid")
+	}
+	_, err := b.manager.Publish(ctx, &paho.Publish{
+		Topic: topic, Payload: append([]byte(nil), payload...), QoS: qos,
+	})
+	return err
+}
+
 func subscribeInbound(ctx context.Context, manager *autopaho.ConnectionManager) {
 	_, _ = manager.Subscribe(ctx, &paho.Subscribe{Subscriptions: []paho.SubscribeOptions{
 		{Topic: "thing/product/+/osd", QoS: 1},

@@ -107,5 +107,5 @@
 → Replay → Operations → Pilot Shell → Quality Gate
 ```
 
-当前已完成 Task 0–8：工程骨架、领域/数据库边界、DJI 协议解析、协议模拟器、MQTT ingestion worker、设备数字孪生边界、WebSocket Hub 与告警生命周期。Task 8 验收记录见 `docs/development/validation/TASK8_VALIDATION.md`；Pilot Shell 属于 MVP 后阶段；MVP 主线止于 Operations，真实飞行控制和 DRC 永不从
+当前已完成 Task 0–9：工程骨架、领域/数据库边界、DJI 协议解析、协议模拟器、MQTT ingestion worker、设备数字孪生边界、WebSocket Hub、告警生命周期与可靠 Command/Outbox 链路。Task 9 验收记录见 `docs/development/validation/TASK9_VALIDATION.md`；Pilot Shell 属于 MVP 后阶段；MVP 主线止于 Operations，真实飞行控制和 DRC 永不从
 模拟器阶段自动开放。
