@@ -21,10 +21,12 @@ The live test verifies:
 | Check | Result |
 |---|---|
 | `go test -tags=integration -run '^$' ./integration/...` | PASS: harness compiles |
-| `powershell -ExecutionPolicy Bypass -File scripts/integration-e2e.ps1` | NOT RUN: Docker CLI did not return within 120 seconds |
-| `docker version` | NOT RUN: Docker CLI did not return within 15 seconds |
+| `powershell -ExecutionPolicy Bypass -File scripts/integration-e2e.ps1` | BLOCKED: Docker Desktop Linux Engine named pipe is missing |
+| `docker version` | BLOCKED: `//./pipe/dockerDesktopLinuxEngine` does not exist |
 
 Docker Desktop processes are present, but the Docker daemon endpoint is not
-responding. No successful live-service result is claimed. After Docker Desktop
-reports that its engine is running, rerun the script from the repository root;
-it stops the Compose containers on completion while preserving their volumes.
+responding. The E2E script now fails within 20 seconds during a Docker Engine
+preflight instead of allowing Compose to hang until an outer command timeout.
+No successful live-service result is claimed. After Docker Desktop reports that
+its engine is running, rerun the script from the repository root; it stops the
+Compose containers on completion while preserving their volumes.
