@@ -11,8 +11,8 @@ time, complete its validation record, then commit before starting the next task.
 | 3 | DJI Topic and Envelope parsing, unknown-field compatibility, parser tests | Complete |
 | 4 | Deterministic Gateway/Aircraft protocol simulator and fault injection | Complete |
 | 5 | MQTT ingestion worker, bounded sharding, deduplication, and graceful shutdown | Complete |
-| 6 | Device digital twin, PostgreSQL latest state, derived Redis cache, and history | Next |
-| 7 | WebSocket hub, authorization, bounded writers, snapshot/cursor recovery | Planned |
+| 6 | Device digital twin, PostgreSQL latest state, derived Redis cache, and history | Complete |
+| 7 | WebSocket hub, authorization, bounded writers, snapshot/cursor recovery | Next |
 | 8 | Alarm detection, deduplication, acknowledgement, persistence, and recovery | Planned |
 | 9 | Command + transactional outbox, MQTT publishing, replies, timeout, and audit | Planned |
 | 10 | Vue operations console and REST/WebSocket client integration | Planned |
