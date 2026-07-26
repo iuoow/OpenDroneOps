@@ -30,3 +30,11 @@ preflight instead of allowing Compose to hang until an outer command timeout.
 No successful live-service result is claimed. After Docker Desktop reports that
 its engine is running, rerun the script from the repository root; it stops the
 Compose containers on completion while preserving their volumes.
+
+## CI fallback
+
+The `integration` GitHub Actions job starts the same pinned Compose services,
+applies migrations, runs this tagged test, collects service logs, and removes
+its ephemeral CI volumes. It provides the authoritative live result while the
+local Docker Engine is unavailable. Its outcome is recorded here after the PR
+run completes.
