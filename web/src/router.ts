@@ -3,6 +3,7 @@ import OperationsView from './views/OperationsView.vue'
 import DevicesView from './views/DevicesView.vue'
 import AlarmsView from './views/AlarmsView.vue'
 import CommandsView from './views/CommandsView.vue'
+import ReplayView from './views/ReplayView.vue'
 import PlaceholderView from './views/PlaceholderView.vue'
 
 const router = createRouter({
@@ -13,7 +14,7 @@ const router = createRouter({
     { path: '/app/:workspaceId/devices', component: DevicesView },
     { path: '/app/:workspaceId/alarms', component: AlarmsView },
     { path: '/app/:workspaceId/commands', component: CommandsView },
-    { path: '/app/:workspaceId/replay/:deviceId?', component: PlaceholderView, props: { title: '轨迹回放', eyebrow: 'Replay' } },
+    { path: '/app/:workspaceId/replay/:deviceId?', component: ReplayView },
     { path: '/app/:workspaceId/operations', component: PlaceholderView, props: { title: '系统运行', eyebrow: 'Operations' } },
     { path: '/:pathMatch(.*)*', redirect: '/app/demo/overview' },
   ],

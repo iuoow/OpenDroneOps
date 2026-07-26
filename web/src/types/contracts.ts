@@ -96,3 +96,27 @@ export interface WebSocketEnvelope {
   request_id?: string
   data: Record<string, unknown>
 }
+
+export interface TrajectoryPoint {
+  id: string
+  workspace_id: string
+  device_id: string
+  occurred_at: string
+  received_at: string
+  latitude: number
+  longitude: number
+  altitude?: number | null
+  speed?: number | null
+  heading?: number | null
+  battery_percent?: number | null
+  source_event_id?: string
+}
+
+export interface TrajectoryPage {
+  items: TrajectoryPoint[]
+  next_cursor?: string
+  truncated: boolean
+  from: string
+  to: string
+  limit: number
+}

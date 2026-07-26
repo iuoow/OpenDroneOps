@@ -1,4 +1,4 @@
-import type { Alarm, Command, Device, DomainEvent } from '../types/contracts'
+import type { Alarm, Command, Device, DomainEvent, TrajectoryPage } from '../types/contracts'
 
 export class ApiError extends Error {
   constructor(
@@ -65,6 +65,23 @@ export class ApiClient {
         parameters: request.parameters,
       }),
     })
+  }
+
+  async getTrajectory(
+    workspaceId: string,
+    deviceId: string,
+    options: { from: string; to: string; limit?: number; cursor?: string },
+  ) {
+    const query = new URLSearchParams({
+      from: options.from,
+      to: options.to,
+      limit: String(options.limit ?? 500),
+    })
+    if (options.cursor) query.set('cursor', options.cursor)
+    return this.request<TrajectoryPage>(
+      `/devices/${encodeURIComponent(deviceId)}/trajectory?${query.toString()}`,
+      workspaceId,
+    )
   }
 
   private async getPage<T>(path: string, workspaceId: string) {

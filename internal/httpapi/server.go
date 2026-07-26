@@ -15,7 +15,11 @@ type Server struct {
 	logger     *slog.Logger
 }
 
-func New(addr string, logger *slog.Logger) *Server {
+type RouteRegistrar interface {
+	Register(*gin.RouterGroup)
+}
+
+func New(addr string, logger *slog.Logger, registrars ...RouteRegistrar) *Server {
 	engine := gin.New()
 	engine.Use(gin.Recovery())
 	api := engine.Group("/api/v1")
@@ -25,6 +29,11 @@ func New(addr string, logger *slog.Logger) *Server {
 	api.GET("/health/ready", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ready"})
 	})
+	for _, registrar := range registrars {
+		if registrar != nil {
+			registrar.Register(api)
+		}
+	}
 
 	return &Server{
 		httpServer: &http.Server{
