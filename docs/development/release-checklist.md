@@ -10,6 +10,10 @@ Before publishing, the release owner must also record:
   images; tags alone are insufficient for a production deployment;
 - the applied Goose migration version and a rollback decision for each new
   migration;
+- for PostgreSQL 18 images, migration of any legacy `postgres_data` volume by
+  backup/restore or `pg_upgrade` before attaching production data. The Compose
+  blueprint intentionally uses a new `postgres18_data` volume at
+  `/var/lib/postgresql` and never repoints the old mount automatically;
 - backup/restore evidence for PostgreSQL and a Redis cache-rebuild exercise;
 - production MQTT TLS, broker ACL, unique credentials and secret delivery;
 - a load/fault result for bounded MQTT queues, WebSocket slow clients, Outbox
