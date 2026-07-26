@@ -29,6 +29,7 @@
 | `github.com/redis/go-redis/v9` | v9.21.0 | BSD-2-Clause | [go-redis](https://github.com/redis/go-redis) | Redis 派生状态与缓存 |
 | `go.opentelemetry.io/otel` | v1.44.0 | Apache-2.0 | [OpenTelemetry Go](https://github.com/open-telemetry/opentelemetry-go) | Trace、Metrics 与上下文关联 |
 | `github.com/pressly/goose/v3` | v3.26.0 | MIT | [Goose](https://github.com/pressly/goose) | 版本化 SQL 迁移；兼容当前本地 Go 1.25.5 工具链 |
+| `github.com/eclipse/paho.golang` | v0.23.0 | EPL-2.0 OR BSD-3-Clause | [Paho Go](https://github.com/eclipse/paho.golang) | MQTT v5 客户端与自动重连；仅在 MQTT transport 边界使用 |
 
 ## 前端依赖
 
