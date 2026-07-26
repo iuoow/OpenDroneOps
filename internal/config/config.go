@@ -3,8 +3,10 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -68,6 +70,18 @@ func (c Config) Validate() error {
 	}
 	if c.WebSocketSendQueueSize < 1 || c.MQTTShardCount < 1 || c.MQTTShardQueueSize < 1 {
 		return errors.New("queue and shard sizes must be positive")
+	}
+	if c.MQTTKeepAlive <= 0 || c.MQTTSessionExpiry <= 0 || c.RawMessageRetention <= 0 {
+		return errors.New("durations must be positive")
+	}
+	if c.AppEnv == "production" {
+		if !strings.HasPrefix(c.MQTTURL, "mqtts://") {
+			return errors.New("production MQTT_URL must use mqtts://")
+		}
+		host, _, err := net.SplitHostPort(c.AdminAddr)
+		if err != nil || (host != "127.0.0.1" && host != "::1" && host != "localhost") {
+			return errors.New("production ADMIN_ADDR must bind to loopback")
+		}
 	}
 	return nil
 }

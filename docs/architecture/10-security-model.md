@@ -1,5 +1,13 @@
 # 安全模型
 
+## Implemented HTTP baseline
+
+The API applies `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`,
+`Referrer-Policy: no-referrer` and `Cache-Control: no-store` to every response.
+Request bodies are capped at 1 MiB at the HTTP boundary. Production startup
+requires `mqtts://` and a loopback-only management listener; TLS/ACL material
+remains deployment-owned and is never committed.
+
 ## 威胁
 
 MQTT 凭证泄露、设备伪造、Topic 越权、消息重放、租户越权、危险指令、WebSocket 越权、日志泄露、供应链和默认配置风险。

@@ -1,5 +1,16 @@
 # 可观测性
 
+## Implemented baseline
+
+- Every API response carries an `X-Request-ID`; a safe inbound ID is preserved
+  and an unsafe or missing value is replaced.
+- HTTP request totals and duration summaries use Prometheus text format.
+  They are exposed only from the administrative listener (`/metrics`), which is
+  loopback-only in production configuration.
+- Readiness can receive named dependency probes. A failed probe produces `503`
+  with the dependency name, while liveness remains independent of downstream
+  availability.
+
 ## 关联字段
 
 `trace_id`、`request_id`、`workspace_id`、`device_id`、脱敏 gateway SN、`command_id`、`tid`、`bid`、Topic Kind、`event_id`。

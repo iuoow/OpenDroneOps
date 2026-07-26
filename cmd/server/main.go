@@ -22,7 +22,9 @@ func main() {
 	ctx, stop := signals.Context(context.Background())
 	defer stop()
 
-	server := httpapi.New(cfg.HTTPAddr, logger)
+	server := httpapi.NewWithOptions(cfg.HTTPAddr, logger, []httpapi.Option{
+		httpapi.WithAdminAddress(cfg.AdminAddr),
+	})
 	serverErr := make(chan error, 1)
 	go func() {
 		serverErr <- server.Run()
