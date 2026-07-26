@@ -38,7 +38,11 @@
 |---|---|---|---|
 | `vue` | 3.5.40 | MIT | UI 框架 |
 | `vite` | 8.1.5 | MIT | 开发服务器与构建 |
-| `typescript` | 7.0.2 | Apache-2.0 | 类型系统 |
+| `typescript` | 5.9.3 | Apache-2.0 | 类型系统；与当前 `vue-tsc`/Vite 类型检查链兼容 |
+| `vue-tsc` | 3.2.4 | MIT | Vue SFC 类型检查 |
+| `@vitejs/plugin-vue` | 6.0.4 | MIT | Vite Vue SFC 编译 |
+| `@types/node` | 24.10.1 | MIT | Vite 配置的 Node.js 类型 |
+| `jsdom` | 27.1.0 | MIT | Vitest 浏览器环境模拟 |
 | `vue-router` | 5.2.0 | MIT | Desktop/Pilot 路由 |
 | `pinia` | 4.0.2 | MIT | 状态管理 |
 | `maplibre-gl` | 6.0.0 | BSD-3-Clause | WebGL 地图 |
