@@ -117,16 +117,31 @@ func TestPostgresRedisAndMosquittoE2E(t *testing.T) {
 	}
 	defer broker.Close(context.Background())
 	topic := "thing/product/" + integrationDeviceID + "/osd"
-	if err := broker.Publish(ctx, topic, []byte(`{"bid":"e2e","method":"e2e/osd"}`), 1); err != nil {
-		t.Fatalf("publish mqtt: %v", err)
+	if err := publishAndReceive(ctx, broker, topic, []byte(`{"bid":"e2e","method":"e2e/osd"}`), received); err != nil {
+		t.Fatal(err)
 	}
-	select {
-	case message := <-received:
-		if message.Topic != topic || string(message.Payload) == "" {
-			t.Fatalf("received unexpected mqtt message: %+v", message)
+}
+
+func publishAndReceive(ctx context.Context, broker *mqttworker.MQTTBroker, topic string, payload []byte, received <-chan mqttworker.RawMessage) error {
+	deadline, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	ticker := time.NewTicker(100 * time.Millisecond)
+	defer ticker.Stop()
+	var lastPublishErr error
+	for {
+		if err := broker.Publish(deadline, topic, payload, 1); err != nil {
+			lastPublishErr = err
 		}
-	case <-ctx.Done():
-		t.Fatal("did not receive published mqtt message before timeout")
+		select {
+		case message := <-received:
+			if message.Topic != topic || string(message.Payload) == "" {
+				return fmt.Errorf("received unexpected mqtt message: %+v", message)
+			}
+			return nil
+		case <-deadline.Done():
+			return fmt.Errorf("did not receive published mqtt message before timeout (last publish error: %v)", lastPublishErr)
+		case <-ticker.C:
+		}
 	}
 }
 
