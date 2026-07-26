@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DJI-compatible MQTT envelope",
+  "type": "object",
+  "properties": {
+    "tid": {
+      "type": "string"
+    },
+    "bid": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "integer"
+    },
+    "gateway": {
+      "type": "string"
+    },
+    "method": {
+      "type": "string"
+    },
+    "need_reply": {
+      "type": [
+        "integer",
+        "boolean"
+      ]
+    },
+    "seq": {
+      "type": "integer"
+    },
+    "data": {}
+  },
+  "required": [
+    "data"
+  ],
+  "additionalProperties": true
+}

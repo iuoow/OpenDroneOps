@@ -1,0 +1,39 @@
+version: "1.0"
+seed: 20260726
+broker:
+  url: mqtt://localhost:1883
+  client_id_prefix: opendroneops-simulator
+  qos: 1
+workspace:
+  id: 00000000-0000-0000-0000-000000000001
+devices:
+  gateways: 10
+  aircraft_per_gateway: 1
+  telemetry_interval: 1s
+  state_change_interval: 30s
+trajectory:
+  center: { latitude: 31.2304, longitude: 121.4737 }
+  radius_meters: 500
+  altitude_meters: { min: 30, max: 120 }
+  speed_mps: { min: 0, max: 15 }
+battery:
+  initial_percent: 100
+  drain_per_minute: 0.5
+  low_alarm_threshold: 20
+faults:
+  duplicate_rate: 0.01
+  out_of_order_rate: 0.005
+  invalid_json_rate: 0.0001
+  unknown_method_rate: 0.0001
+  disconnect_rate_per_minute: 0.001
+  reconnect_delay: { min: 1s, max: 30s }
+  command_failure_rate: 0.02
+  command_timeout_rate: 0.01
+  command_latency: { min: 100ms, max: 3s }
+bursts:
+  enabled: true
+  every: 10m
+  duration: 30s
+  multiplier: 5
+commands:
+  allowed: [sim_status_refresh, sim_alarm_trigger, sim_alarm_resolve]

@@ -1,0 +1,34 @@
+# Task 0 baseline. Production must replace tags with verified image digests and
+# replace deployment/mosquitto.conf with TLS, ACL and credential-file config.
+services:
+  postgres:
+    image: ${POSTGRES_IMAGE:?pin POSTGRES_IMAGE}
+    environment:
+      POSTGRES_DB: opendroneops
+      POSTGRES_USER: opendroneops
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    ports: ["5432:5432"]
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U opendroneops -d opendroneops"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  redis:
+    image: ${REDIS_IMAGE:?pin REDIS_IMAGE}
+    command: ["redis-server", "--appendonly", "no"]
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  mosquitto:
+    image: ${MOSQUITTO_IMAGE:?pin MOSQUITTO_IMAGE}
+    ports: ["1883:1883", "9001:9001"]
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto_data:/mosquitto/data
+volumes:
+  postgres_data:
+  mosquitto_data:

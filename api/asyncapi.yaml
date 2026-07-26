@@ -1,0 +1,75 @@
+asyncapi: 2.6.0
+info:
+  title: OpenDroneOps Event Contracts
+  version: 0.1.0
+channels:
+  thing/product/{device_sn}/osd:
+    parameters:
+      device_sn:
+        schema: { type: string }
+    subscribe:
+      message: { $ref: "#/components/messages/DJIEnvelope" }
+  thing/product/{device_sn}/state:
+    parameters:
+      device_sn:
+        schema: { type: string }
+    subscribe:
+      message: { $ref: "#/components/messages/DJIEnvelope" }
+  thing/product/{gateway_sn}/services:
+    parameters:
+      gateway_sn:
+        schema: { type: string }
+    publish:
+      message: { $ref: "#/components/messages/DJIEnvelope" }
+  thing/product/{gateway_sn}/services_reply:
+    parameters:
+      gateway_sn:
+        schema: { type: string }
+    subscribe:
+      message: { $ref: "#/components/messages/DJIEnvelope" }
+  thing/product/{gateway_sn}/events:
+    parameters:
+      gateway_sn:
+        schema: { type: string }
+    subscribe:
+      message: { $ref: "#/components/messages/DJIEventEnvelope" }
+  thing/product/{gateway_sn}/events_reply:
+    parameters:
+      gateway_sn:
+        schema: { type: string }
+    publish:
+      message: { $ref: "#/components/messages/DJIEventEnvelope" }
+  thing/product/{gateway_sn}/requests:
+    parameters:
+      gateway_sn:
+        schema: { type: string }
+    subscribe:
+      message: { $ref: "#/components/messages/DJIEnvelope" }
+  thing/product/{gateway_sn}/requests_reply:
+    parameters:
+      gateway_sn:
+        schema: { type: string }
+    publish:
+      message: { $ref: "#/components/messages/DJIEnvelope" }
+  sys/product/{gateway_sn}/status:
+    parameters:
+      gateway_sn:
+        schema: { type: string }
+    subscribe:
+      message: { $ref: "#/components/messages/DJIEnvelope" }
+  browser/websocket:
+    publish:
+      message: { $ref: "#/components/messages/WebSocketEvent" }
+components:
+  messages:
+    DJIEnvelope:
+      payload: { $ref: "../schemas/dji-envelope.schema.json" }
+    DJIEventEnvelope:
+      payload:
+        allOf:
+          - { $ref: "../schemas/dji-envelope.schema.json" }
+          - type: object
+            properties:
+              need_reply: { type: [integer, boolean] }
+    WebSocketEvent:
+      payload: { $ref: "../schemas/websocket-envelope.schema.json" }

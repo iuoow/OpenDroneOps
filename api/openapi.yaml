@@ -1,0 +1,326 @@
+openapi: 3.1.0
+info:
+  title: OpenDroneOps API
+  version: 0.1.0
+servers:
+  - url: http://localhost:8080/api/v1
+paths:
+  /health/live:
+    get:
+      operationId: getLiveness
+      responses:
+        "200": { description: Alive }
+  /health/ready:
+    get:
+      operationId: getReadiness
+      responses:
+        "200": { description: Ready }
+        "503": { description: Not ready }
+  /devices:
+    get:
+      operationId: listDevices
+      parameters:
+        - $ref: "#/components/parameters/WorkspaceId"
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+      responses:
+        "200":
+          description: Device page
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DevicePage" }
+  /devices/{deviceId}:
+    get:
+      operationId: getDevice
+      parameters:
+        - $ref: "#/components/parameters/WorkspaceId"
+        - $ref: "#/components/parameters/DeviceId"
+      responses:
+        "200":
+          description: Device
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Device" }
+        "404": { description: Not found }
+  /devices/{deviceId}/state:
+    get:
+      operationId: getDeviceState
+      parameters:
+        - $ref: "#/components/parameters/WorkspaceId"
+        - $ref: "#/components/parameters/DeviceId"
+      responses:
+        "200":
+          description: Latest state
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DeviceState" }
+  /devices/{deviceId}/events:
+    get:
+      operationId: listDeviceEvents
+      parameters:
+        - $ref: "#/components/parameters/WorkspaceId"
+        - $ref: "#/components/parameters/DeviceId"
+        - name: after
+          in: query
+          schema: { type: string }
+        - name: from
+          in: query
+          schema: { type: string, format: date-time }
+        - name: to
+          in: query
+          schema: { type: string, format: date-time }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 1000, default: 100 }
+      responses:
+        "200": { description: Event page }
+  /events:
+    get:
+      operationId: listWorkspaceEvents
+      parameters:
+        - $ref: "#/components/parameters/WorkspaceId"
+        - name: after
+          in: query
+          schema: { type: string }
+        - name: from
+          in: query
+          schema: { type: string, format: date-time }
+        - name: to
+          in: query
+          schema: { type: string, format: date-time }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 1000, default: 100 }
+      responses:
+        "200":
+          description: Workspace event page used for WebSocket cursor recovery
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EventPage" }
+  /alarms:
+    get:
+      operationId: listAlarms
+      parameters:
+        - $ref: "#/components/parameters/WorkspaceId"
+        - name: status
+          in: query
+          schema: { type: string, enum: [OPEN, ACKNOWLEDGED, RESOLVED] }
+      responses:
+        "200":
+          description: Alarm page
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AlarmPage" }
+  /alarms/{alarmId}:
+    get:
+      operationId: getAlarm
+      parameters:
+        - $ref: "#/components/parameters/WorkspaceId"
+        - name: alarmId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Alarm
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Alarm" }
+        "404": { description: Not found }
+  /alarms/{alarmId}/acknowledge:
+    post:
+      operationId: acknowledgeAlarm
+      parameters:
+        - $ref: "#/components/parameters/WorkspaceId"
+        - name: alarmId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: Acknowledged }
+  /commands:
+    get:
+      operationId: listCommands
+      parameters:
+        - $ref: "#/components/parameters/WorkspaceId"
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+      responses:
+        "200":
+          description: Command page
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CommandPage" }
+    post:
+      operationId: createCommand
+      parameters:
+        - $ref: "#/components/parameters/WorkspaceId"
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateCommandRequest" }
+      responses:
+        "202":
+          description: Accepted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Command" }
+        "409": { description: Idempotency conflict }
+  /commands/{commandId}:
+    get:
+      operationId: getCommand
+      parameters:
+        - $ref: "#/components/parameters/WorkspaceId"
+        - name: commandId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Command
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Command" }
+components:
+  parameters:
+    WorkspaceId:
+      name: X-Workspace-ID
+      in: header
+      required: true
+      schema: { type: string, format: uuid }
+    DeviceId:
+      name: deviceId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  schemas:
+    Device:
+      type: object
+      required: [id, workspace_id, vendor, serial_number, device_type, status]
+      properties:
+        id: { type: string, format: uuid }
+        workspace_id: { type: string, format: uuid }
+        vendor: { type: string, example: DJI }
+        serial_number: { type: string }
+        gateway_serial_number: { type: [string, "null"] }
+        product_model: { type: [string, "null"] }
+        device_type: { type: string }
+        status: { type: string }
+        capabilities: { type: object, additionalProperties: true }
+    DevicePage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Device" }
+        next_cursor: { type: [string, "null"] }
+    DeviceState:
+      type: object
+      required: [device_id, state_version, server_time, online]
+      properties:
+        device_id: { type: string, format: uuid }
+        state_version: { type: integer, format: int64 }
+        device_time: { type: [string, "null"], format: date-time }
+        server_time: { type: string, format: date-time }
+        online: { type: boolean }
+        latitude: { type: [number, "null"] }
+        longitude: { type: [number, "null"] }
+        altitude: { type: [number, "null"] }
+        battery_percent: { type: [number, "null"], minimum: 0, maximum: 100 }
+        mode: { type: [string, "null"] }
+        payload: { type: object, additionalProperties: true }
+    Event:
+      type: object
+      required: [event_id, workspace_id, event_type, received_at, payload]
+      properties:
+        event_id: { type: string }
+        workspace_id: { type: string, format: uuid }
+        device_id: { type: [string, "null"], format: uuid }
+        gateway_device_id: { type: [string, "null"], format: uuid }
+        event_type: { type: string }
+        method: { type: [string, "null"] }
+        occurred_at: { type: [string, "null"], format: date-time }
+        received_at: { type: string, format: date-time }
+        sequence: { type: [integer, "null"], format: int64 }
+        payload: { type: object, additionalProperties: true }
+    EventPage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Event" }
+        next_cursor: { type: [string, "null"] }
+    Alarm:
+      type: object
+      required: [id, workspace_id, device_id, alarm_type, severity, status, first_occurred_at, last_occurred_at]
+      properties:
+        id: { type: string, format: uuid }
+        workspace_id: { type: string, format: uuid }
+        device_id: { type: string, format: uuid }
+        dedup_key: { type: string }
+        alarm_type: { type: string }
+        severity: { type: string, enum: [INFO, WARNING, CRITICAL] }
+        status: { type: string, enum: [OPEN, ACKNOWLEDGED, RESOLVED] }
+        first_occurred_at: { type: string, format: date-time }
+        last_occurred_at: { type: string, format: date-time }
+        occurrence_count: { type: integer, format: int64 }
+        acknowledged_by: { type: [string, "null"] }
+        acknowledged_at: { type: [string, "null"], format: date-time }
+        resolved_at: { type: [string, "null"], format: date-time }
+        details: { type: object, additionalProperties: true }
+    AlarmPage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Alarm" }
+        next_cursor: { type: [string, "null"] }
+    CreateCommandRequest:
+      type: object
+      required: [target_device_id, method, parameters]
+      properties:
+        target_device_id: { type: string, format: uuid }
+        method: { type: string }
+        parameters: { type: object, additionalProperties: true }
+        expires_at: { type: [string, "null"], format: date-time }
+    Command:
+      type: object
+      required: [id, target_device_id, method, status, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        target_device_id: { type: string, format: uuid }
+        method: { type: string }
+        status:
+          type: string
+          enum: [CREATED, VALIDATED, REJECTED, PUBLISH_PENDING, PUBLISHED, ACCEPTED, EXECUTING, SUCCEEDED, FAILED, TIMEOUT, CANCELED]
+        dji_tid: { type: [string, "null"] }
+        dji_bid: { type: [string, "null"] }
+        created_at: { type: string, format: date-time }
+        completed_at: { type: [string, "null"], format: date-time }
+    CommandPage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Command" }
+        next_cursor: { type: [string, "null"] }

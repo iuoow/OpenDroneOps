@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OpenDroneOps domain event",
+  "type": "object",
+  "required": [
+    "event_id",
+    "event_type",
+    "schema_version",
+    "workspace_id",
+    "occurred_at",
+    "received_at",
+    "payload"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "device_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "gateway_device_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source": {
+      "type": "string"
+    },
+    "method": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sequence": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "received_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlation": {
+      "type": "object",
+      "properties": {
+        "tid": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bid": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "command_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "payload": {}
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+*.local.yaml
+secrets/
+certs/private/
+recordings/private/
+dist/
+bin/
+coverage.out
+*.prof
+.DS_Store
+.idea/
+.vscode/
+node_modules/
