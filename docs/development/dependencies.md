@@ -13,7 +13,7 @@
 | Go | CI/发布 1.26.5；模块最低 1.25.0 | BSD-3-Clause | [go.dev/dl](https://go.dev/dl/) | CI 固定当前稳定版；开发机允许使用 Go 1.25.x，避免自动下载工具链 |
 | PostgreSQL | 18.4 | PostgreSQL License | [postgres Docker Official Image](https://hub.docker.com/_/postgres) | 当前稳定主版本的最新小版本 |
 | Redis | 7.2.14 | BSD-3-Clause | [redis Docker Official Image](https://hub.docker.com/_/redis) | 仅作为可重建派生状态，保留宽松许可证；不采用 7.4+/8.x source-available 版本 |
-| Mosquitto | 2.1.2 | EPL-2.0 / EDL-1.0 | [Mosquitto 2.1.2 release](https://mosquitto.org/blog/2026/02/version-2-1-2-released/) | MQTT 5 默认 Broker，包含当前稳定修复 |
+| Mosquitto | 2.1.2 (`eclipse-mosquitto:2.1.2-alpine`) | EPL-2.0 / EDL-1.0 | [Mosquitto 2.1.2 release](https://mosquitto.org/blog/2026/02/version-2-1-2-released/) | MQTT 5 默认 Broker；Docker Official Image 不提供无后缀 `2.1.2` 标签，固定使用可拉取的 Alpine 标签 |
 | Node.js | 24.x | MIT | [nodejs.org](https://nodejs.org/en/about/previous-releases) | 前端构建与测试运行时；以 CI 镜像中的具体小版本锁定 |
 | npm | 11.5.1 | Artistic-2.0 | [npm CLI](https://github.com/npm/cli) | 前端阶段使用 lockfile 锁定传递依赖 |
 

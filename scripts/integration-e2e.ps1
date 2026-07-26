@@ -26,7 +26,7 @@ function Assert-DockerEngine {
 Assert-DockerEngine
 $env:POSTGRES_IMAGE = 'postgres:18.4'
 $env:REDIS_IMAGE = 'redis:7.2.14'
-$env:MOSQUITTO_IMAGE = 'eclipse-mosquitto:2.1.2'
+$env:MOSQUITTO_IMAGE = 'eclipse-mosquitto:2.1.2-alpine'
 $env:POSTGRES_PASSWORD = 'integration-only'
 
 docker compose -f deployment/docker-compose.blueprint.yaml up -d --wait --wait-timeout 45

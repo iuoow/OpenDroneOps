@@ -30,7 +30,7 @@ web-build:
 	npm --prefix web run build
 
 compose-config:
-	POSTGRES_IMAGE=postgres:18.4 REDIS_IMAGE=redis:7.2.14 MOSQUITTO_IMAGE=eclipse-mosquitto:2.1.2 POSTGRES_PASSWORD=local-only-placeholder docker compose -f deployment/docker-compose.blueprint.yaml config --quiet
+	POSTGRES_IMAGE=postgres:18.4 REDIS_IMAGE=redis:7.2.14 MOSQUITTO_IMAGE=eclipse-mosquitto:2.1.2-alpine POSTGRES_PASSWORD=local-only-placeholder docker compose -f deployment/docker-compose.blueprint.yaml config --quiet
 
 run-server:
 	go run ./cmd/server

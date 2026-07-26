@@ -45,7 +45,7 @@ jobs:
     env:
       POSTGRES_IMAGE: postgres:18.4
       REDIS_IMAGE: redis:7.2.14
-      MOSQUITTO_IMAGE: eclipse-mosquitto:2.1.2
+      MOSQUITTO_IMAGE: eclipse-mosquitto:2.1.2-alpine
       POSTGRES_PASSWORD: integration-only
       POSTGRES_DSN: postgres://opendroneops:integration-only@localhost:5432/opendroneops?sslmode=disable
       REDIS_ADDR: localhost:6379

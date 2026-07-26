@@ -23,6 +23,7 @@ The live test verifies:
 | `go test -tags=integration -run '^$' ./integration/...` | PASS: harness compiles |
 | `powershell -ExecutionPolicy Bypass -File scripts/integration-e2e.ps1` | BLOCKED: Docker Desktop Linux Engine named pipe is missing |
 | `docker version` | BLOCKED: `//./pipe/dockerDesktopLinuxEngine` does not exist |
+| Initial GitHub Actions integration run | FAILED: `eclipse-mosquitto:2.1.2` does not exist on Docker Hub; corrected to `2.1.2-alpine` and rerun is pending |
 
 Docker Desktop processes are present, but the Docker daemon endpoint is not
 responding. The E2E script now fails within 20 seconds during a Docker Engine
