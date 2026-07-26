@@ -5,7 +5,7 @@ Task 0 已根据“开发前自动裁决”的授权完成默认决策。后续�
 
 - [x] 项目名称：`OpenDroneOps`；预期 GitHub：`github.com/iuoow/OpenDroneOps`
 - [x] 许可证：Apache-2.0
-- [x] 固定版本：见 `DEPENDENCIES.md`
+- [x] 固定版本：见 `docs/development/dependencies.md`
 - [x] 数据库迁移：Goose + 显式 SQL
 - [x] Redis Go Client：`github.com/redis/go-redis/v9`
 - [x] MVP 登录：不实现真实登录；保留 Workspace 边界和鉴权接口

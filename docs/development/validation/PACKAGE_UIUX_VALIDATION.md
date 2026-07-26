@@ -1,7 +1,7 @@
 # UI/UX Package Validation
 
 - Date: 2026-07-26
-- Total files: 102 (excluding `MANIFEST.md`)
+- Total files: 102 (excluding the local-only MANIFEST audit file)
 - UI specification documents: 17
 - Wireframes: 6
 - User flows: 3
@@ -13,7 +13,7 @@
 - Real credentials included: no
 - DRC/real flight controls included: no
 - Package type: specifications, contracts, wireframes, tokens, prompts, acceptance criteria and Task 1 backend scaffold
-- Task 0 decision overlay: `DEPENDENCIES.md`, `LICENSE`, `adr/0011-task-0-baseline-decisions.md`
+- Task 0 decision overlay: `docs/development/dependencies.md`, `LICENSE`, `docs/decisions/0011-task-0-baseline-decisions.md`
 
 ## Coverage
 

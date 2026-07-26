@@ -10,6 +10,11 @@ bin/
 coverage.out
 *.prof
 .DS_Store
+
+# Local-only Codex/operator artifacts; public project records belong in docs/.
+MANIFEST.md
+CODEX_*.md
+codex/
 .idea/
 .vscode/
 node_modules/

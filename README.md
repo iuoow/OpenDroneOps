@@ -3,7 +3,7 @@
 > Blueprint 0.1 · 校准日期：2026-07-26
 
 项目标识：`OpenDroneOps`  
-预期远端：`https://github.com/iuoow/OpenDroneOps`（当前尚未创建）
+远端仓库：[`iuoow/OpenDroneOps`](https://github.com/iuoow/OpenDroneOps)
 
 ## 项目目标
 
@@ -60,10 +60,10 @@
 
 ## 使用顺序
 
-1. 阅读 `CODEX_START_HERE.md`。
+1. 阅读 `README.md`、`AGENTS.md` 和 `docs/development/task-sequence.md`。
 2. 初始化 Git 仓库。
 3. 让 Codex 读取根目录 `AGENTS.md`。
-4. Task 0 已固定依赖、许可证、迁移工具和 MVP 边界，详情见 `DEPENDENCIES.md` 与 `adr/0011-task-0-baseline-decisions.md`。
+4. Task 0 的依赖、许可证、迁移工具和 MVP 边界见 `docs/development/dependencies.md`、`docs/development/license-decision.md` 与 `docs/decisions/0011-task-0-baseline-decisions.md`。
 5. 先完成契约和质量验证，再逐个执行后续任务。
 
 ## 首条验收链路
@@ -92,13 +92,12 @@
 
 新增：
 
-- `docs/ui/`：页面、地图、告警、指令、回放、Pilot、无障碍和性能规格；
-- `design/tokens/`：JSON/CSS Tokens；
-- `design/wireframes/`：低保真线框；
-- `design/user-flows/`：告警、指令和重连流程；
-- `UIUX_TASKS.md`：前端 Codex 任务；
-- `codex/prompts/ui/`：实施 Prompt；
-- `codex/checklists/ui-pr-review.md`：UI 评审清单。
+- `docs/design/ui/`：页面、地图、告警、指令、回放、Pilot、无障碍和性能规格；
+- `docs/design/tokens/`：JSON/CSS Tokens；
+- `docs/design/wireframes/`：低保真线框；
+- `docs/design/user-flows/`：告警、指令和重连流程；
+- `docs/development/uiux-tasks.md`：前端任务；
+- Codex 私有 Prompt 和清单保留在仓库外的本地工作区，不作为公开项目内容。
 
 实施顺序：
 
@@ -108,5 +107,5 @@
 → Replay → Operations → Pilot Shell → Quality Gate
 ```
 
-当前已完成 Task 0、Task 1 工程骨架、Task 2 领域/数据库边界、Task 3 DJI 协议解析与 Task 4 协议模拟器。Task 4 验收记录见 `TASK4_VALIDATION.md`；Pilot Shell 属于 MVP 后阶段；MVP 主线止于 Operations，真实飞行控制和 DRC 永不从
+当前已完成 Task 0、Task 1 工程骨架、Task 2 领域/数据库边界、Task 3 DJI 协议解析与 Task 4 协议模拟器。Task 4 验收记录见 `docs/development/validation/TASK4_VALIDATION.md`；Pilot Shell 属于 MVP 后阶段；MVP 主线止于 Operations，真实飞行控制和 DRC 永不从
 模拟器阶段自动开放。

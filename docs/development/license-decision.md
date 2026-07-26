@@ -14,4 +14,4 @@
 - EMQX 5.9+ 使用 BSL 1.1，集群、托管和嵌入式商业场景存在限制。
 - Mosquitto、HiveMQ CE 和 Go 依赖均有各自许可证。
 - 不复制停止维护的 DJI Demo 代码和安全设计。
-- 本文件不是法律意见。第三方依赖仍以各自许可证为准，完整清单见 `DEPENDENCIES.md`。
+- 本文件不是法律意见。第三方依赖仍以各自许可证为准，完整清单见 `docs/development/dependencies.md`。

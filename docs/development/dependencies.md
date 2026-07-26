@@ -1,7 +1,7 @@
 # OpenDroneOps 固定依赖基线
 
 > Task 0 决策日期：2026-07-26  
-> 远端归属：`github.com/iuoow/OpenDroneOps`（当前远端仓库尚未创建）
+> 远端归属：[`github.com/iuoow/OpenDroneOps`](https://github.com/iuoow/OpenDroneOps)
 
 本文档固定开发基线。除非提交新的 ADR、更新本文件并完成回归验证，否则不得使用
 `latest`、未固定的容器 Tag 或 Git 主分支。
@@ -15,7 +15,7 @@
 | Redis | 7.2.14 | BSD-3-Clause | [redis Docker Official Image](https://hub.docker.com/_/redis) | 仅作为可重建派生状态，保留宽松许可证；不采用 7.4+/8.x source-available 版本 |
 | Mosquitto | 2.1.2 | EPL-2.0 / EDL-1.0 | [Mosquitto 2.1.2 release](https://mosquitto.org/blog/2026/02/version-2-1-2-released/) | MQTT 5 默认 Broker，包含当前稳定修复 |
 | Node.js | 24.x | MIT | [nodejs.org](https://nodejs.org/en/about/previous-releases) | 前端构建与测试运行时；以 CI 镜像中的具体小版本锁定 |
-| npm | 11.5.1 | Artistic-2.0 | [npm CLI](https://github.com/npm/cli) | 与当前开发环境一致，使用 `package-lock.json` 锁定传递依赖 |
+| npm | 11.5.1 | Artistic-2.0 | [npm CLI](https://github.com/npm/cli) | 前端阶段使用 lockfile 锁定传递依赖 |
 
 ## Go 依赖
 

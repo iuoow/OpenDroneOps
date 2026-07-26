@@ -17,7 +17,7 @@
 
 ## 固定版本
 
-完整清单见 `DEPENDENCIES.md`。核心版本：
+完整清单见 `docs/development/dependencies.md`。核心版本：
 
 ```text
 Go                 CI/发布 1.26.5；本地模块最低 1.25.0
@@ -44,10 +44,10 @@ Mosquitto          2.1.2
 - 尚未执行 `go test`、`go test -race`、构建或集成测试，因为项目还没有 Go module。
 - 尚未启动容器；Docker Desktop 当前读取用户配置时有权限警告。
 - 尚未执行完整 YAML/OpenAPI linter；当前环境没有安装独立 YAML 解析器。
-- 尚未创建 GitHub 远端仓库、提交或推送。
+- 当时尚未创建 GitHub 远端仓库；当前远端已创建，但后续整理完成前仍未推送。
 
 ## 下一步（Task 0 完成时）
 
-进入 `CODEX_TASKS.md` 的 Task 1：只建立工程骨架、配置加载、健康检查、
+进入路线图中的 Task 1：只建立工程骨架、配置加载、健康检查、
 Compose/CI 和快速失败路径，不实现 MQTT、领域模型或业务页面。该任务已在
-`TASK1_VALIDATION.md` 中完成。
+`docs/development/validation/TASK1_VALIDATION.md` 中完成。

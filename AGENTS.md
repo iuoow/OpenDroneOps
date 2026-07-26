@@ -9,10 +9,11 @@ Build OpenDroneOps incrementally according to this repository. Preserve protocol
 Before editing code, read:
 
 1. `README.md`
-2. `CODEX_TASKS.md`
-3. Relevant `docs/`
-4. Relevant `adr/`
-5. `codex/checklists/definition-of-done.md`
+2. `docs/development/task-sequence.md`
+3. `docs/architecture/14-roadmap.md`
+4. Relevant `docs/`
+5. Relevant `docs/decisions/`
+6. `docs/development/`
 
 Conflict priority:
 
@@ -26,7 +27,7 @@ Report unresolved conflicts instead of silently choosing.
 
 ## Working rules
 
-- Implement one `CODEX_TASKS.md` task at a time.
+- Implement one roadmap task at a time; record the result in `docs/development/validation/`.
 - Do not implement later phases opportunistically.
 - Keep the repository buildable and testable.
 - Before adding a production dependency, document purpose, license, pinned version, and alternatives.
@@ -101,7 +102,7 @@ Report commands, results, changed files, limitations, and next task before decla
 
 ## UI/UX rules
 
-- Read `docs/ui/`, `design/`, and `UIUX_TASKS.md` before frontend work.
+- Read `docs/design/ui/`, `docs/design/`, and `docs/development/uiux-tasks.md` before frontend work.
 - Desktop and Pilot use separate shells but shared domain contracts and design tokens.
 - Do not hardcode new semantic colors, spacing, shadows, radii, or z-index outside tokens.
 - Distinguish browser WebSocket, platform MQTT, device online state, and telemetry freshness.

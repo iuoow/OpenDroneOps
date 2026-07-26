@@ -15,7 +15,7 @@ Pilot 2、原始消息保留和远端仓库等未决问题。继续编码会导�
    不在 Task 0 自动创建。
 2. 项目许可证采用 Apache-2.0。
 3. Task 0 固定 CI/发布 Go 1.26.5（模块最低 Go 1.25.0）、PostgreSQL 18.4、Redis 7.2.14、Mosquitto 2.1.2，
-   以及 `DEPENDENCIES.md` 中列出的 Go/Node 依赖。
+   以及 `docs/development/dependencies.md` 中列出的 Go/Node 依赖。
 4. 数据库迁移采用 Goose，使用显式 SQL；不引入 ORM。
 5. 后端保持多 Workspace 隔离；Desktop UI 一次只操作一个 Workspace。
 6. MVP 不实现真实用户登录和商业 IAM。开发环境使用明确的本地 Actor，

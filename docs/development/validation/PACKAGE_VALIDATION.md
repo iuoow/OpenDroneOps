@@ -1,7 +1,7 @@
 # Package Validation Report
 
 - Validation date: 2026-07-26
-- Files: 120 (excluding `MANIFEST.md`)
+- Files: 120 (excluding the local-only MANIFEST audit file)
 - JSON documents parsed: 4
 - YAML documents: 4 (Compose, OpenAPI, AsyncAPI, simulator scenarios)
 - Empty files: 0
