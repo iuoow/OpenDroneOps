@@ -18,6 +18,7 @@ time, complete its validation record, then commit before starting the next task.
 | 10 | Vue operations console and REST/WebSocket client integration | Complete |
 | 11 | Trajectory replay and query limits | Complete |
 | 12 | Capacity, resilience, observability, security, and release verification | Complete |
+| 13 | Live PostgreSQL, Redis and MQTT integration/E2E verification | Waiting on local Docker daemon |
 
 Validation reports live in `docs/development/validation/` and use a matching
 `TASKx_VALIDATION.md` name. Later tasks must not import private Codex prompts or
