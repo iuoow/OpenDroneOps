@@ -130,7 +130,10 @@ CREATE TABLE alarms (
   acknowledged_at TIMESTAMPTZ,
   resolved_at TIMESTAMPTZ,
   details JSONB NOT NULL DEFAULT '{}'::jsonb,
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT alarms_severity_check CHECK (severity IN ('INFO', 'WARNING', 'CRITICAL')),
+  CONSTRAINT alarms_status_check CHECK (status IN ('OPEN', 'ACKNOWLEDGED', 'RESOLVED')),
+  CONSTRAINT alarms_occurrence_count_check CHECK (occurrence_count > 0)
 );
 CREATE UNIQUE INDEX alarms_active_dedup_unique
 ON alarms(workspace_id, dedup_key)
