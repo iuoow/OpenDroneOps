@@ -107,5 +107,4 @@
 → Replay → Operations → Pilot Shell → Quality Gate
 ```
 
-当前已完成 Task 0–13：工程骨架、领域/数据库边界、DJI 协议解析、协议模拟器、MQTT ingestion worker、设备数字孪生边界、WebSocket Hub、告警生命周期、可靠 Command/Outbox 链路、Vue Operations Console、有界轨迹回放、发布级安全/可观测性/验证基线，以及真实 PostgreSQL、Redis、MQTT 的集成 E2E 验证。Task 12 验收记录见 `docs/development/validation/TASK12_VALIDATION.md`，Task 13 验收记录见 `docs/development/validation/INTEGRATION_E2E_VALIDATION.md`；Pilot Shell 属于 MVP 后阶段；MVP 主线止于 Operations，真实飞行控制和 DRC 永不从
-模拟器阶段自动开放。
+当前已完成 Task 0–13：工程骨架、领域/数据库边界、DJI 协议解析、协议模拟器、MQTT ingestion worker、设备数字孪生边界、WebSocket Hub、告警生命周期、可靠 Command/Outbox 链路、Vue Operations Console、有界轨迹回放、发布级安全/可观测性/验证基线，以及真实 PostgreSQL、Redis、MQTT 的集成 E2E 验证。Task 12 验收记录见 `docs/development/validation/TASK12_VALIDATION.md`，Task 13 验收记录见 `docs/development/validation/INTEGRATION_E2E_VALIDATION.md`。下一阶段为 Pilot Shell Foundation，规划见 `docs/development/pilot-shell-foundation-plan.md`；它仅交付 Mock Bridge 下的只读现场体验，不开放真实飞行控制或 DRC。真实 DJI 集成仍需满足 `docs/decisions/0013-pilot-shell-foundation-before-real-dji.md` 的外部安全门槛。

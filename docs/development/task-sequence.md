@@ -19,7 +19,19 @@ time, complete its validation record, then commit before starting the next task.
 | 11 | Trajectory replay and query limits | Complete |
 | 12 | Capacity, resilience, observability, security, and release verification | Complete |
 | 13 | Live PostgreSQL, Redis and MQTT integration/E2E verification | Complete (validated by GitHub Actions while local Docker is unavailable) |
+| 14 | Pilot Shell foundation contracts, safety boundaries, and bridge test plan | Planned |
+| 15 | Separate Pilot entry point and browser Mock Bridge | Planned |
+| 16 | Touch-first, high-contrast Pilot shell and bootstrap UX | Planned |
+| 17 | Read-only Pilot Home with snapshot/WebSocket recovery | Planned |
+| 18 | Field continuity: reconnect UX and non-sensitive local drafts | Planned |
+| 19 | Consent-first diagnostic UX and Pilot quality gate | Planned |
+| 20 | Real Pilot 2 integration and authorized hardware-validation gate | Blocked: requires DJI credentials, supported model, authorized hardware, and security SOP |
 
 Validation reports live in `docs/development/validation/` and use a matching
 `TASKx_VALIDATION.md` name. Later tasks must not import private Codex prompts or
 rely on removed workspace files.
+
+Tasks 14–19 form the Pilot Shell Foundation and are constrained by
+`docs/decisions/0013-pilot-shell-foundation-before-real-dji.md`. They do not
+enable real DJI, device mutation, flight control, or DRC capabilities. Task 20
+may begin only after its external gate is explicitly satisfied.
