@@ -8,7 +8,10 @@ services:
       POSTGRES_USER: opendroneops
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
     ports: ["5432:5432"]
-    volumes: [postgres_data:/var/lib/postgresql/data]
+    # PostgreSQL 18 stores its cluster below this mount. Keep the legacy
+    # postgres_data volume outside this Compose definition so an upgrade never
+    # silently mounts or overwrites older-major-version data.
+    volumes: [postgres18_data:/var/lib/postgresql]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U opendroneops -d opendroneops"]
       interval: 5s
@@ -30,5 +33,5 @@ services:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - mosquitto_data:/mosquitto/data
 volumes:
-  postgres_data:
+  postgres18_data:
   mosquitto_data:

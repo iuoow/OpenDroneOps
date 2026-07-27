@@ -39,3 +39,34 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+
+  integration:
+    runs-on: ubuntu-latest
+    env:
+      POSTGRES_IMAGE: postgres:18.4
+      REDIS_IMAGE: redis:7.2.14
+      MOSQUITTO_IMAGE: eclipse-mosquitto:2.1.2-alpine
+      POSTGRES_PASSWORD: integration-only
+      POSTGRES_DSN: postgres://opendroneops:integration-only@localhost:5432/opendroneops?sslmode=disable
+      REDIS_ADDR: localhost:6379
+      REDIS_PASSWORD: ""
+      MQTT_URL: mqtt://localhost:1883
+      INTEGRATION_TEST: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.5"
+          cache: true
+      - name: Start pinned infrastructure
+        run: docker compose -f deployment/docker-compose.blueprint.yaml up -d --wait --wait-timeout 45
+      - name: Apply migrations
+        run: go run ./cmd/migrate
+      - name: Run PostgreSQL, Redis, and MQTT E2E
+        run: go test -tags=integration ./integration/...
+      - name: Collect service logs
+        if: always()
+        run: docker compose -f deployment/docker-compose.blueprint.yaml logs --no-color
+      - name: Stop infrastructure
+        if: always()
+        run: docker compose -f deployment/docker-compose.blueprint.yaml down -v
