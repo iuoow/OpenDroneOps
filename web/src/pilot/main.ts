@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import PilotBootstrapApp from './PilotBootstrapApp.vue'
 import { type PilotRuntimeConfig } from './bridge'
 import { BrowserMockPilotBridge } from './mockBridge'
+import './styles.css'
 
 const config: PilotRuntimeConfig = {
   workspaceId: import.meta.env.VITE_PILOT_WORKSPACE_ID || 'demo',

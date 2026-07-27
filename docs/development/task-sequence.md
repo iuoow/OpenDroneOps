@@ -21,7 +21,7 @@ time, complete its validation record, then commit before starting the next task.
 | 13 | Live PostgreSQL, Redis and MQTT integration/E2E verification | Complete (validated by GitHub Actions while local Docker is unavailable) |
 | 14 | Pilot Shell foundation contracts, safety boundaries, and bridge test plan | Complete |
 | 15 | Separate Pilot entry point and browser Mock Bridge | Complete |
-| 16 | Touch-first, high-contrast Pilot shell and bootstrap UX | Planned |
+| 16 | Touch-first, high-contrast Pilot shell and bootstrap UX | Complete |
 | 17 | Read-only Pilot Home with snapshot/WebSocket recovery | Planned |
 | 18 | Field continuity: reconnect UX and non-sensitive local drafts | Planned |
 | 19 | Consent-first diagnostic UX and Pilot quality gate | Planned |
