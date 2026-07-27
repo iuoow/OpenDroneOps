@@ -12,7 +12,7 @@ export type PilotModule = 'flight_status' | 'alarm_feed' | 'field_notes' | 'diag
 
 export type PilotLicenseResult =
   | { accepted: true }
-  | { accepted: false; reason: 'LICENSE_REJECTED' | 'LICENSE_UNAVAILABLE' }
+  | { accepted: false; reason: 'LICENSE_REJECTED' }
 
 export interface PilotApiConfig {
   baseUrl: string
