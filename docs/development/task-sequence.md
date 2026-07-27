@@ -19,7 +19,7 @@ time, complete its validation record, then commit before starting the next task.
 | 11 | Trajectory replay and query limits | Complete |
 | 12 | Capacity, resilience, observability, security, and release verification | Complete |
 | 13 | Live PostgreSQL, Redis and MQTT integration/E2E verification | Complete (validated by GitHub Actions while local Docker is unavailable) |
-| 14 | Pilot Shell foundation contracts, safety boundaries, and bridge test plan | Planned |
+| 14 | Pilot Shell foundation contracts, safety boundaries, and bridge test plan | Complete |
 | 15 | Separate Pilot entry point and browser Mock Bridge | Planned |
 | 16 | Touch-first, high-contrast Pilot shell and bootstrap UX | Planned |
 | 17 | Read-only Pilot Home with snapshot/WebSocket recovery | Planned |
