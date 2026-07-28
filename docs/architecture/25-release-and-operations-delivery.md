@@ -11,8 +11,8 @@ automatically publishing software to a registry or creating a GitHub Release.
 | `internal/buildinfo` | Version, commit, and UTC build-time provenance embedded with linker flags and logged at startup. |
 | `deployment/docker-compose.release.yaml` | Application-only deployment overlay for external PostgreSQL, Redis, and MQTT. |
 | `deployment/release.env.example` | No-secret production configuration inventory. Copy it to `release.env` outside source control. |
-| `scripts/package-release.ps1` | Local candidate image archives, SHA-256 manifest, and no registry push. |
-| `.github/workflows/release-candidate.yml` | Manually triggered image-archive workflow; uploads checksummed artifacts only. |
+| `scripts/package-release.ps1` | Local candidate image archives, SHA-256 manifest verification, and no registry push. |
+| `.github/workflows/release-candidate.yml` | Manually triggered image-archive workflow; verifies and uploads a checksummed handover bundle only. |
 
 The normal CI `delivery-contract` job builds all three images and validates the
 release Compose interpolation. It cannot publish images.
@@ -27,8 +27,9 @@ release Compose interpolation. It cannot publish images.
    powershell -ExecutionPolicy Bypass -File scripts/package-release.ps1 -Version v0.1.0-rc.1
    ```
 
-4. Verify every archive SHA-256 against `release-manifest.json` or the uploaded
-   `.sha256` file.
+4. Verify the whole handover directory with
+   `scripts/verify-release-package.ps1`. This checks the candidate version,
+   source commit, required targets, archive names, and every archive SHA-256.
 5. Scan/sign and push the exact archives under immutable registry digests using
    the organisation's approved registry process. Record those digests; a tag is
    not deployment authority.

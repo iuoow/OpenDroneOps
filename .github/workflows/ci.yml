@@ -76,6 +76,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Test release package integrity verifier
+        run: pwsh -File scripts/test-release-package-verifier.ps1
       - name: Build deployable application images without publishing
         run: |
           docker build --target server --build-arg VERSION=ci --build-arg COMMIT=${{ github.sha }} --build-arg BUILD_TIME=ci -t opendroneops/server:ci .

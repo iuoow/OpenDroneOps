@@ -32,6 +32,7 @@ time, complete its validation record, then commit before starting the next task.
 | 24 | Load, fault, and capacity verification harness | Complete; see `docs/architecture/24-load-fault-and-capacity-verification.md` and `docs/development/validation/TASK24_VALIDATION.md` |
 | 25 | Release automation and operational delivery | Complete; see `docs/architecture/25-release-and-operations-delivery.md` and `docs/development/validation/TASK25_VALIDATION.md` |
 | 26 | Capacity visibility and operator experience | Complete; see `docs/architecture/26-capacity-visibility-and-operations.md` and `docs/development/validation/TASK26_VALIDATION.md` |
+| 27 | Release candidate artifact integrity and handover | Complete; see `docs/architecture/27-release-artifact-integrity.md` and `docs/development/validation/TASK27_VALIDATION.md` |
 
 Task 20A is a completed preparation subtask: it adds a hardware-independent
 readiness/capability evaluator and conformance tests. It does not count Task 20
@@ -48,6 +49,6 @@ Tasks 14–19 form the Pilot Shell Foundation and are constrained by
 enable real DJI, device mutation, flight control, or DRC capabilities. Task 20
 may begin only after its external gate is explicitly satisfied.
 
-Tasks 21-26 are Scale & Release Readiness work. They are independent of the
+Tasks 21-27 are Scale & Release Readiness work. They are independent of the
 blocked real Pilot 2 gate and must not imply that Task 20's external evidence
 has been supplied.

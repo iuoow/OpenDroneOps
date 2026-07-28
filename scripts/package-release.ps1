@@ -33,8 +33,10 @@ foreach ($target in @('server', 'worker', 'migrate')) {
 [pscustomobject]@{
   version = $Version
   commit = $commit
-  build_time = $buildTime
+  created_at = $buildTime
   artifacts = $artifacts
 } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $resolvedOutput 'release-manifest.json') -Encoding utf8
+
+& (Join-Path $PSScriptRoot 'verify-release-package.ps1') -PackageDirectory $resolvedOutput
 
 Write-Output "Release candidate package created at $resolvedOutput"

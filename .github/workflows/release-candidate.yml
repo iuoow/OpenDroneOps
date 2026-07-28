@@ -38,3 +38,41 @@ jobs:
             opendroneops-${{ matrix.target }}-${{ inputs.version }}.tar.gz
             opendroneops-${{ matrix.target }}-${{ inputs.version }}.tar.gz.sha256
           if-no-files-found: error
+
+  manifest:
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: opendroneops-*-${{ inputs.version }}
+          path: release-artifacts
+          merge-multiple: true
+      - name: Verify target checksums
+        working-directory: release-artifacts
+        run: find . -maxdepth 1 -name '*.sha256' -print0 | xargs -0 -r -n1 sha256sum --check
+      - name: Assemble candidate manifest
+        env:
+          VERSION: ${{ inputs.version }}
+          COMMIT: ${{ github.sha }}
+        working-directory: release-artifacts
+        run: |
+          artifacts='[]'
+          for target in server worker migrate; do
+            archive="opendroneops-${target}-${VERSION}.tar.gz"
+            checksum="$(awk '{print $1}' "${archive}.sha256")"
+            artifacts="$(jq -c --argjson current "$artifacts" --arg target "$target" --arg image "opendroneops/${target}:${VERSION}" --arg archive "$archive" --arg sha256 "$checksum" '$current + [{target: $target, image: $image, archive: $archive, sha256: $sha256}]')"
+          done
+          jq -n --arg version "$VERSION" --arg commit "$COMMIT" --arg createdAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --argjson artifacts "$artifacts" '{version: $version, commit: $commit, created_at: $createdAt, artifacts: $artifacts}' > release-manifest.json
+      - name: Verify candidate manifest
+        working-directory: release-artifacts
+        run: pwsh -File ../scripts/verify-release-package.ps1 -PackageDirectory .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: opendroneops-release-bundle-${{ inputs.version }}
+          path: |
+            release-artifacts/*.tar.gz
+            release-artifacts/*.tar.gz.sha256
+            release-artifacts/release-manifest.json
+          if-no-files-found: error
