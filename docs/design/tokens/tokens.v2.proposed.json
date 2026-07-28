@@ -1,0 +1,51 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "description": "Proposed UI refresh tokens. This file is not consumed by the current application until the visual-foundation implementation task approves it.",
+  "color": {
+    "brand": {
+      "primary": { "value": "#1F5EFF" },
+      "primaryHover": { "value": "#174ACC" },
+      "accent": { "value": "#007C91" }
+    },
+    "surface": {
+      "canvas": { "value": "#F4F6F8" },
+      "base": { "value": "#FFFFFF" },
+      "raised": { "value": "#FFFFFF" },
+      "subtle": { "value": "#EEF2F5" },
+      "strong": { "value": "#E3E9EE" }
+    },
+    "ink": {
+      "strong": { "value": "#142033" },
+      "default": { "value": "#24344D" },
+      "muted": { "value": "#607088" },
+      "disabled": { "value": "#8793A5" }
+    },
+    "border": {
+      "subtle": { "value": "#DCE3EA" },
+      "default": { "value": "#C7D2DE" },
+      "strong": { "value": "#9EADBD" },
+      "focus": { "value": "#1F5EFF" }
+    },
+    "status": {
+      "info": { "value": "#1F5EFF" },
+      "success": { "value": "#16794A" },
+      "warning": { "value": "#B86600" },
+      "danger": { "value": "#C9362B" },
+      "offline": { "value": "#66758A" },
+      "stale": { "value": "#78648F" }
+    }
+  },
+  "elevation": {
+    "overlay": { "value": "0 8px 24px rgba(20, 32, 51, 0.12)" },
+    "modal": { "value": "0 18px 48px rgba(20, 32, 51, 0.18)" }
+  },
+  "layout": {
+    "attentionRail": { "value": "280px" },
+    "contextPaneMin": { "value": "360px" },
+    "contextPaneMax": { "value": "440px" }
+  },
+  "control": {
+    "heightDesktop": { "value": "36px" },
+    "heightTouch": { "value": "48px" }
+  }
+}

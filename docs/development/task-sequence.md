@@ -33,6 +33,7 @@ time, complete its validation record, then commit before starting the next task.
 | 25 | Release automation and operational delivery | Complete; see `docs/architecture/25-release-and-operations-delivery.md` and `docs/development/validation/TASK25_VALIDATION.md` |
 | 26 | Capacity visibility and operator experience | Complete; see `docs/architecture/26-capacity-visibility-and-operations.md` and `docs/development/validation/TASK26_VALIDATION.md` |
 | 27 | Release candidate artifact integrity and handover | Complete; see `docs/architecture/27-release-artifact-integrity.md` and `docs/development/validation/TASK27_VALIDATION.md` |
+| 28 | UI/UX refresh design baseline and Overview v2 specification | Complete; implementation is intentionally deferred pending review; see `docs/design/ui/17-operations-console-refresh-baseline.md`, `18-state-language-v2.md`, `19-overview-v2-spec.md`, and `docs/development/validation/TASK28_VALIDATION.md` |
 
 Task 20A is a completed preparation subtask: it adds a hardware-independent
 readiness/capability evaluator and conformance tests. It does not count Task 20
