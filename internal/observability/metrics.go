@@ -1,6 +1,7 @@
 package observability
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"sort"
@@ -13,6 +14,21 @@ import (
 type requestMetric struct {
 	count uint64
 	sum   float64
+}
+
+type CapacityEvent struct {
+	Component      string `json:"component"`
+	Outcome        string `json:"outcome"`
+	Count          uint64 `json:"count"`
+	Severity       string `json:"severity"`
+	Recommendation string `json:"recommendation"`
+}
+
+type CapacitySummary struct {
+	GeneratedAt      time.Time       `json:"generated_at"`
+	ProcessStartedAt time.Time       `json:"process_started_at"`
+	Health           string          `json:"health"`
+	Events           []CapacityEvent `json:"events"`
 }
 
 // Registry is a deliberately small Prometheus text-format registry. It keeps
@@ -65,6 +81,79 @@ func (r *Registry) Handler() http.Handler {
 		w.Header().Set("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
 		_, _ = w.Write([]byte(r.Render()))
 	})
+}
+
+// CapacitySummary provides a bounded, operator-oriented view of process-local
+// capacity outcomes. Counts are cumulative since process start; alerting
+// systems should derive rates from the Prometheus counter instead.
+func (r *Registry) CapacitySummary(now time.Time) CapacitySummary {
+	if now.IsZero() {
+		now = time.Now().UTC()
+	}
+	if r == nil {
+		return CapacitySummary{GeneratedAt: now, Health: "unknown", Events: []CapacityEvent{}}
+	}
+	r.mu.RLock()
+	keys := make([]string, 0, len(r.capacityEvents))
+	for key := range r.capacityEvents {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	events := make([]CapacityEvent, 0, len(keys))
+	for _, key := range keys {
+		parts := strings.Split(key, "\x00")
+		severity, recommendation := capacityGuidance(parts[0], parts[1])
+		events = append(events, CapacityEvent{
+			Component: parts[0], Outcome: parts[1], Count: r.capacityEvents[key],
+			Severity: severity, Recommendation: recommendation,
+		})
+	}
+	startedAt := r.startedAt
+	r.mu.RUnlock()
+	health := "healthy"
+	for _, event := range events {
+		if event.Severity == "critical" {
+			health = "critical"
+			break
+		}
+		if event.Severity == "warning" {
+			health = "attention"
+		}
+	}
+	return CapacitySummary{GeneratedAt: now, ProcessStartedAt: startedAt, Health: health, Events: events}
+}
+
+func (r *Registry) CapacityHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.Header().Set("Cache-Control", "no-store")
+		_ = json.NewEncoder(w).Encode(r.CapacitySummary(time.Now().UTC()))
+	})
+}
+
+func capacityGuidance(component, outcome string) (string, string) {
+	switch component + ":" + outcome {
+	case "mqtt_ingestion:shard_queue_limit":
+		return "critical", "Reduce ingress pressure and inspect shard capacity before increasing queue limits."
+	case "realtime:publish_failure":
+		return "critical", "Inspect Redis connectivity and recovery-provider health; Pub/Sub is not durable recovery."
+	case "websocket:workspace_session_limit":
+		return "warning", "Review authenticated session concurrency and close stale clients before raising the workspace quota."
+	case "websocket:slow_client_disconnect":
+		return "warning", "Inspect client network latency and payload volume; durable events disconnect slow clients by design."
+	case "websocket:device_filter_limit":
+		return "warning", "Narrow device subscriptions or revise the operator query workflow."
+	case "mqtt_ingestion:hot_key_limit":
+		return "warning", "Inspect the hot device or gateway and its upstream publish rate before raising per-key capacity."
+	case "websocket:telemetry_coalesced":
+		return "info", "Telemetry was coalesced for a slow client; check the rate if this persists."
+	case "websocket:duplicate_event", "realtime:duplicate_event":
+		return "info", "Duplicate delivery was suppressed; inspect rate changes around reconnect or instance transitions."
+	case "realtime:invalid_message":
+		return "warning", "Inspect relay protocol compatibility and reject malformed publishers."
+	default:
+		return "info", "Review this controlled capacity outcome and correlate it with the Prometheus counter rate."
+	}
 }
 
 func (r *Registry) Render() string {

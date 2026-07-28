@@ -22,3 +22,19 @@ func TestRegistryRendersStablePrometheusMetrics(t *testing.T) {
 		t.Fatalf("metrics missing capacity counter: %s", rendered)
 	}
 }
+
+func TestCapacitySummaryProvidesOrderedGuidance(t *testing.T) {
+	registry := NewRegistry(time.Date(2026, 7, 28, 0, 0, 0, 0, time.UTC))
+	registry.RecordCapacityEvent("websocket", "telemetry_coalesced")
+	registry.RecordCapacityEvent("mqtt_ingestion", "shard_queue_limit")
+	summary := registry.CapacitySummary(time.Date(2026, 7, 28, 1, 0, 0, 0, time.UTC))
+	if summary.Health != "critical" || len(summary.Events) != 2 {
+		t.Fatalf("CapacitySummary() = %+v", summary)
+	}
+	if summary.Events[0].Component != "mqtt_ingestion" || summary.Events[0].Severity != "critical" {
+		t.Fatalf("unexpected ordered capacity event: %+v", summary.Events)
+	}
+	if summary.Events[1].Severity != "info" || summary.Events[1].Recommendation == "" {
+		t.Fatalf("missing operator guidance: %+v", summary.Events[1])
+	}
+}

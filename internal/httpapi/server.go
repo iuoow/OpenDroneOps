@@ -18,11 +18,12 @@ import (
 const maxAPIRequestBody = 1 << 20
 
 type Server struct {
-	httpServer  *http.Server
-	adminServer *http.Server
-	logger      *slog.Logger
-	metrics     *observability.Registry
-	handler     http.Handler
+	httpServer   *http.Server
+	adminServer  *http.Server
+	logger       *slog.Logger
+	metrics      *observability.Registry
+	handler      http.Handler
+	adminHandler http.Handler
 }
 
 type RouteRegistrar interface {
@@ -114,9 +115,11 @@ func NewWithOptions(addr string, logger *slog.Logger, optionList []Option, regis
 	if settings.adminAddr != "" {
 		admin := http.NewServeMux()
 		admin.Handle("/metrics", settings.metrics.Handler())
+		admin.Handle("/capacity", settings.metrics.CapacityHandler())
+		server.adminHandler = admin
 		server.adminServer = &http.Server{
 			Addr:              settings.adminAddr,
-			Handler:           admin,
+			Handler:           server.adminHandler,
 			ReadHeaderTimeout: 5 * time.Second,
 			ReadTimeout:       15 * time.Second,
 			WriteTimeout:      15 * time.Second,
@@ -160,6 +163,10 @@ func (s *Server) Shutdown(ctx context.Context) error {
 func (s *Server) Metrics() *observability.Registry { return s.metrics }
 
 func (s *Server) Handler() http.Handler { return s.handler }
+
+// AdminHandler is intended only for the loopback-bound management listener.
+// It is exposed for integration tests and must never be mounted on the public API.
+func (s *Server) AdminHandler() http.Handler { return s.adminHandler }
 
 func securityHeaders() gin.HandlerFunc {
 	return func(c *gin.Context) {
