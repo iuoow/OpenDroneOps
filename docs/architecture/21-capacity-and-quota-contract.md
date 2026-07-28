@@ -12,6 +12,7 @@ budget.
 | WebSocket outbound messages per session | `WS_SEND_QUEUE_SIZE` | 256 | Telemetry is coalesced by device; a later durable event disconnects the slow client. |
 | WebSocket sessions per workspace | `WS_MAX_SESSIONS_PER_WORKSPACE` | 64 | New connection is rejected with `ErrWorkspaceCapacityExceeded`. |
 | Device filters per WebSocket subscription | `WS_MAX_DEVICE_FILTERS` | 100 | Subscription is rejected with `ErrSubscriptionTooBroad`. |
+| Recent event IDs per WebSocket session | `WS_EVENT_DEDUPE_CAPACITY` | 2048 | Duplicate live/recovery overlap is suppressed for the session. |
 | MQTT ingestion shards | `MQTT_SHARD_COUNT` | 32 | Fixed worker partition count. |
 | MQTT messages queued per shard | `MQTT_SHARD_QUEUE_SIZE` | 1024 | Ingestion remains bounded; the worker reports its existing queue-pressure outcome. |
 | Trajectory query | API query contract | bounded | Existing time-window and item-count validation rejects oversized reads. |

@@ -73,6 +73,7 @@ type Config struct {
 	QueueSize               int
 	MaxSessionsPerWorkspace int
 	MaxDeviceFilters        int
+	EventDedupeCapacity     int
 	Authorizer              Authorizer
 	Recovery                RecoveryProvider
 	CapacityObserver        CapacityObserver
@@ -90,6 +91,7 @@ type Stats struct {
 	RejectedSubscriptions uint64
 	SlowClientDisconnects uint64
 	TelemetryCoalesced    uint64
+	DuplicateEvents       uint64
 }
 
 type Hub struct {
@@ -101,6 +103,7 @@ type Hub struct {
 	rejectedSubscriptions atomic.Uint64
 	slowClientDisconnects atomic.Uint64
 	telemetryCoalesced    atomic.Uint64
+	duplicateEvents       atomic.Uint64
 }
 
 func New(config Config) (*Hub, error) {
@@ -113,7 +116,10 @@ func New(config Config) (*Hub, error) {
 	if config.MaxDeviceFilters == 0 {
 		config.MaxDeviceFilters = 100
 	}
-	if config.MaxSessionsPerWorkspace < 1 || config.MaxDeviceFilters < 1 {
+	if config.EventDedupeCapacity == 0 {
+		config.EventDedupeCapacity = 2048
+	}
+	if config.MaxSessionsPerWorkspace < 1 || config.MaxDeviceFilters < 1 || config.EventDedupeCapacity < 1 {
 		return nil, errors.New("websocket capacity limits must be positive")
 	}
 	if config.Authorizer == nil {
@@ -145,7 +151,8 @@ func (h *Hub) Connect(ctx context.Context, principal Principal, workspaceID stri
 	session := &Session{
 		hub: h, principal: principal, workspaceID: workspaceID, transport: transport,
 		queue: make(chan Event, h.config.QueueSize), pendingTelemetry: make(map[string]Event),
-		done: make(chan struct{}),
+		seenEvents: make(map[string]struct{}, h.config.EventDedupeCapacity),
+		done:       make(chan struct{}),
 	}
 	h.sessions[session] = struct{}{}
 	session.writerCtx, session.cancel = context.WithCancel(ctx)
@@ -211,6 +218,7 @@ func (h *Hub) Stats() Stats {
 		RejectedSubscriptions: h.rejectedSubscriptions.Load(),
 		SlowClientDisconnects: h.slowClientDisconnects.Load(),
 		TelemetryCoalesced:    h.telemetryCoalesced.Load(),
+		DuplicateEvents:       h.duplicateEvents.Load(),
 	}
 }
 
@@ -240,6 +248,8 @@ type Session struct {
 	subscription     SubscriptionRequest
 	queue            chan Event
 	pendingTelemetry map[string]Event
+	seenEvents       map[string]struct{}
+	seenOrder        []string
 	done             chan struct{}
 	writerCtx        context.Context
 	cancel           context.CancelFunc
@@ -264,10 +274,11 @@ func (s *Session) Subscribe(ctx context.Context, request SubscriptionRequest) er
 	s.subscription = request
 	s.mu.Unlock()
 
+	readyAt := time.Now().UTC()
 	readyData, _ := json.Marshal(map[string]any{"workspace_id": s.workspaceID, "cursor": request.Cursor})
 	if err := s.enqueue(Event{
-		EventID: "session-ready-" + s.principal.Subject, Type: "session.ready",
-		SchemaVersion: "1.0", WorkspaceID: s.workspaceID, OccurredAt: time.Now().UTC(), Data: readyData,
+		EventID: fmt.Sprintf("session-ready-%s-%d", s.principal.Subject, readyAt.UnixNano()), Type: "session.ready",
+		SchemaVersion: "1.0", WorkspaceID: s.workspaceID, OccurredAt: readyAt, Data: readyData,
 	}); err != nil {
 		return err
 	}
@@ -321,8 +332,16 @@ func (s *Session) enqueue(event Event) error {
 		return ErrClosedSession
 	default:
 	}
+	if event.EventID != "" {
+		if _, seen := s.seenEvents[event.EventID]; seen {
+			s.hub.duplicateEvents.Add(1)
+			s.hub.recordCapacity("websocket", "duplicate_event")
+			return nil
+		}
+	}
 	select {
 	case s.queue <- event:
+		s.rememberEvent(event.EventID)
 		return nil
 	default:
 		if isTelemetry(event) {
@@ -331,11 +350,25 @@ func (s *Session) enqueue(event Event) error {
 				key = event.EventID
 			}
 			s.pendingTelemetry[key] = event
+			s.rememberEvent(event.EventID)
 			s.hub.telemetryCoalesced.Add(1)
 			s.hub.recordCapacity("websocket", "telemetry_coalesced")
 			return nil
 		}
 		return ErrSlowClient
+	}
+}
+
+func (s *Session) rememberEvent(eventID string) {
+	if eventID == "" {
+		return
+	}
+	s.seenEvents[eventID] = struct{}{}
+	s.seenOrder = append(s.seenOrder, eventID)
+	if len(s.seenOrder) > s.hub.config.EventDedupeCapacity {
+		oldest := s.seenOrder[0]
+		delete(s.seenEvents, oldest)
+		s.seenOrder = s.seenOrder[1:]
 	}
 }
 

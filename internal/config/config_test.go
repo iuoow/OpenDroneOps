@@ -27,7 +27,7 @@ func TestLoadUsesDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load() error = %v", err)
 	}
-	if cfg.HTTPAddr != ":8080" || cfg.WebSocketSendQueueSize != 256 || cfg.WebSocketMaxSessionsPerWorkspace != 64 || cfg.WebSocketMaxDeviceFilters != 100 || cfg.MQTTMaxPendingPerKey != 64 {
+	if cfg.HTTPAddr != ":8080" || cfg.WebSocketSendQueueSize != 256 || cfg.WebSocketMaxSessionsPerWorkspace != 64 || cfg.WebSocketMaxDeviceFilters != 100 || cfg.WebSocketEventDedupeCapacity != 2048 || cfg.MQTTMaxPendingPerKey != 64 || cfg.RealtimeDedupeCapacity != 4096 {
 		t.Fatalf("unexpected defaults: %+v", cfg)
 	}
 }
@@ -49,6 +49,13 @@ func TestLoadRejectsNonPositiveCapacityLimits(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "capacity limits") {
 		t.Fatalf("expected MQTT key capacity validation error, got %v", err)
 	}
+
+	t.Setenv("MQTT_MAX_PENDING_PER_KEY", "64")
+	t.Setenv("REALTIME_DEDUPE_CAPACITY", "0")
+	_, err = Load()
+	if err == nil || !strings.Contains(err.Error(), "capacity limits") {
+		t.Fatalf("expected realtime capacity validation error, got %v", err)
+	}
 }
 
 func TestProductionRequiresTLSMQTTAndLoopbackAdmin(t *testing.T) {
@@ -57,6 +64,7 @@ func TestProductionRequiresTLSMQTTAndLoopbackAdmin(t *testing.T) {
 	t.Setenv("MQTT_CLIENT_ID", "test-client")
 	t.Setenv("MQTT_URL", "mqtt://broker:1883")
 	t.Setenv("ADMIN_ADDR", "0.0.0.0:9090")
+	t.Setenv("REALTIME_NODE_ID", "node-1")
 	_, err := Load()
 	if err == nil || !strings.Contains(err.Error(), "mqtts") {
 		t.Fatalf("expected production TLS error, got %v", err)
@@ -66,5 +74,12 @@ func TestProductionRequiresTLSMQTTAndLoopbackAdmin(t *testing.T) {
 	_, err = Load()
 	if err == nil || !strings.Contains(err.Error(), "loopback") {
 		t.Fatalf("expected loopback admin error, got %v", err)
+	}
+
+	t.Setenv("ADMIN_ADDR", "127.0.0.1:9090")
+	t.Setenv("REALTIME_NODE_ID", "opendroneops-local")
+	_, err = Load()
+	if err == nil || !strings.Contains(err.Error(), "REALTIME_NODE_ID") {
+		t.Fatalf("expected unique realtime node error, got %v", err)
 	}
 }

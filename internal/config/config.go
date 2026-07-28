@@ -27,9 +27,13 @@ type Config struct {
 	WebSocketSendQueueSize           int
 	WebSocketMaxSessionsPerWorkspace int
 	WebSocketMaxDeviceFilters        int
+	WebSocketEventDedupeCapacity     int
 	MQTTShardCount                   int
 	MQTTShardQueueSize               int
 	MQTTMaxPendingPerKey             int
+	RealtimeNodeID                   string
+	RealtimeChannel                  string
+	RealtimeDedupeCapacity           int
 }
 
 func Load() (Config, error) {
@@ -50,9 +54,13 @@ func Load() (Config, error) {
 		WebSocketSendQueueSize:           integer("WS_SEND_QUEUE_SIZE", 256),
 		WebSocketMaxSessionsPerWorkspace: integer("WS_MAX_SESSIONS_PER_WORKSPACE", 64),
 		WebSocketMaxDeviceFilters:        integer("WS_MAX_DEVICE_FILTERS", 100),
+		WebSocketEventDedupeCapacity:     integer("WS_EVENT_DEDUPE_CAPACITY", 2048),
 		MQTTShardCount:                   integer("MQTT_SHARD_COUNT", 32),
 		MQTTShardQueueSize:               integer("MQTT_SHARD_QUEUE_SIZE", 1024),
 		MQTTMaxPendingPerKey:             integer("MQTT_MAX_PENDING_PER_KEY", 64),
+		RealtimeNodeID:                   getenv("REALTIME_NODE_ID", "opendroneops-local"),
+		RealtimeChannel:                  getenv("REALTIME_CHANNEL", "opendroneops:realtime:v1"),
+		RealtimeDedupeCapacity:           integer("REALTIME_DEDUPE_CAPACITY", 4096),
 	}
 	if err := cfg.Validate(); err != nil {
 		return Config{}, err
@@ -74,13 +82,19 @@ func (c Config) Validate() error {
 	if len(missing) > 0 {
 		return fmt.Errorf("missing required configuration: %v", missing)
 	}
-	if c.WebSocketSendQueueSize < 1 || c.WebSocketMaxSessionsPerWorkspace < 1 || c.WebSocketMaxDeviceFilters < 1 || c.MQTTShardCount < 1 || c.MQTTShardQueueSize < 1 || c.MQTTMaxPendingPerKey < 1 {
+	if c.WebSocketSendQueueSize < 1 || c.WebSocketMaxSessionsPerWorkspace < 1 || c.WebSocketMaxDeviceFilters < 1 || c.WebSocketEventDedupeCapacity < 1 || c.MQTTShardCount < 1 || c.MQTTShardQueueSize < 1 || c.MQTTMaxPendingPerKey < 1 || c.RealtimeDedupeCapacity < 1 {
 		return errors.New("capacity limits, queues, and shard sizes must be positive")
+	}
+	if c.RealtimeNodeID == "" || c.RealtimeChannel == "" {
+		return errors.New("realtime node id and channel are required")
 	}
 	if c.MQTTKeepAlive <= 0 || c.MQTTSessionExpiry <= 0 || c.RawMessageRetention <= 0 {
 		return errors.New("durations must be positive")
 	}
 	if c.AppEnv == "production" {
+		if c.RealtimeNodeID == "opendroneops-local" {
+			return errors.New("production REALTIME_NODE_ID must be unique per instance")
+		}
 		if !strings.HasPrefix(c.MQTTURL, "mqtts://") {
 			return errors.New("production MQTT_URL must use mqtts://")
 		}

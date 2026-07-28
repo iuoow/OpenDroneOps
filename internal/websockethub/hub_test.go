@@ -98,6 +98,32 @@ func TestSessionRecoveryUsesSnapshotOrCursorReplay(t *testing.T) {
 	}
 }
 
+func TestSessionDeduplicatesOverlapBetweenRecoveryAndLiveEvents(t *testing.T) {
+	event := Event{EventID: "alarm-1", Type: "alarm.created", WorkspaceID: "ws-1", Data: []byte(`{}`)}
+	hub, err := New(Config{QueueSize: 8, Recovery: &fakeRecovery{snapshot: []Event{event}}})
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	defer hub.Close()
+	transport := newRecordingTransport()
+	session, err := hub.Connect(context.Background(), Principal{Subject: "operator", WorkspaceIDs: map[string]struct{}{"ws-1": {}}}, "ws-1", transport)
+	if err != nil {
+		t.Fatalf("Connect() error = %v", err)
+	}
+	if err := session.Subscribe(context.Background(), SubscriptionRequest{Channels: []string{"alarm"}}); err != nil {
+		t.Fatalf("Subscribe() error = %v", err)
+	}
+	waitForEvent(t, transport, "alarm.created")
+	hub.Publish(event)
+	time.Sleep(10 * time.Millisecond)
+	if got := countEvents(transport, "alarm.created"); got != 1 {
+		t.Fatalf("alarm delivery count = %d, want one", got)
+	}
+	if hub.Stats().DuplicateEvents != 1 {
+		t.Fatalf("hub stats = %+v", hub.Stats())
+	}
+}
+
 func TestSlowClientCoalescesTelemetryAndClosesForDurableEvent(t *testing.T) {
 	transport := newRecordingTransport()
 	transport.block = make(chan struct{})
@@ -219,6 +245,18 @@ func waitForEvent(t *testing.T, transport *recordingTransport, eventType string)
 		runtime.Gosched()
 	}
 	t.Fatalf("event %q was not written", eventType)
+}
+
+func countEvents(transport *recordingTransport, eventType string) int {
+	transport.mu.Lock()
+	defer transport.mu.Unlock()
+	count := 0
+	for _, event := range transport.events {
+		if event.Type == eventType {
+			count++
+		}
+	}
+	return count
 }
 
 type fakeRecovery struct {
