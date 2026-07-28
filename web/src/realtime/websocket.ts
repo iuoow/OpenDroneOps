@@ -20,6 +20,7 @@ export class RealtimeClient {
   private stopped = true
   private reconnectAttempt = 0
   private cursor = ''
+  private recovering = false
   private reconnectTimer?: number
 
   constructor(options: RealtimeOptions) {
@@ -56,7 +57,8 @@ export class RealtimeClient {
     this.socket = socket
     socket.addEventListener('open', () => {
       this.reconnectAttempt = 0
-      this.options.onStatus?.(this.cursor ? 'recovering' : 'connected')
+      this.recovering = Boolean(this.cursor)
+      this.options.onStatus?.(this.recovering ? 'recovering' : 'connected')
       this.sendSubscription()
     })
     socket.addEventListener('message', (message) => this.handleMessage(message.data))
@@ -71,10 +73,12 @@ export class RealtimeClient {
     try {
       const event = JSON.parse(String(raw)) as WebSocketEnvelope
       if (!event.event_id || !event.type) return
+      if (this.recovering) {
+        this.recovering = false
+        this.options.onStatus?.('connected', '已恢复实时增量')
+      }
       this.options.onEvent?.(event)
-    } catch {
-      this.options.onStatus?.('disconnected', '收到无法解析的实时事件')
-    }
+    } catch { /* Invalid events are ignored; a valid socket remains connected. */ }
   }
 
   private sendSubscription() {

@@ -60,6 +60,25 @@ describe('RealtimeClient', () => {
     expect(JSON.parse(socket?.sent[0] ?? '{}').data.cursor).toBe('cursor-7')
     socket?.message({ event_id: 'event-1', type: 'alarm.updated', data: {} })
     expect(events).toHaveLength(1)
+    expect(statuses.at(-1)).toBe('connected')
+    client.disconnect()
+  })
+
+  it('ignores an invalid event without mislabelling a healthy socket as disconnected', () => {
+    const statuses: string[] = []
+    let socket: FakeSocket | undefined
+    const client = new RealtimeClient({
+      workspaceId: 'workspace-1',
+      WebSocketImpl: class {
+        static OPEN = 1
+        constructor() { socket = new FakeSocket(); return socket as unknown as WebSocket }
+      } as unknown as typeof WebSocket,
+      onStatus: (status) => statuses.push(status),
+    })
+    client.connect()
+    socket?.open()
+    socket?.message('not-json')
+    expect(statuses).not.toContain('disconnected')
     client.disconnect()
   })
 

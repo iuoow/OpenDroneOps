@@ -75,6 +75,10 @@ onUnmounted(() => store.stopRealtime())
     </aside>
 
     <main id="main-content" class="main-content" tabindex="-1">
+      <div v-if="store.sourceMode === 'api' && (store.connection === 'recovering' || store.connection === 'disconnected')" class="connection-recovery-notice" role="status" aria-live="polite">
+        <div><strong>{{ store.connection === 'recovering' ? '正在恢复实时数据' : '实时连接已断开' }}</strong><span>保留最近快照；最后同步：{{ store.lastSyncAt ? new Date(store.lastSyncAt).toLocaleString('zh-CN', { hour12: false }) : '尚未成功同步' }}。</span></div>
+        <button class="button button--secondary" type="button" @click="store.hydrate(workspaceId)">重新加载快照</button>
+      </div>
       <div v-if="store.error" class="global-notice" role="alert">
         <strong>快照加载失败</strong>
         <span>{{ store.error }}</span>

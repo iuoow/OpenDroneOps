@@ -127,6 +127,7 @@ export const useOperationsStore = defineStore('operations', () => {
   const loading = ref(false)
   const error = ref('')
   const lastSyncAt = ref<string | null>(null)
+  const sourceMode = computed(() => isDemoMode() ? 'demo' : 'api')
   let realtime: RealtimeClient | undefined
 
   const deviceList = computed(() => Object.values(devices.value))
@@ -283,6 +284,7 @@ export const useOperationsStore = defineStore('operations', () => {
     loading,
     error,
     lastSyncAt,
+    sourceMode,
     deviceList,
     alarmList,
     commandList,
