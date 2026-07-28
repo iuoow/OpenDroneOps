@@ -31,6 +31,48 @@ func TestHubAuthorizesWorkspaceAndFiltersEvents(t *testing.T) {
 	}
 }
 
+func TestHubEnforcesWorkspaceAndSubscriptionCapacity(t *testing.T) {
+	observer := &recordingCapacityObserver{}
+	hub, err := New(Config{
+		QueueSize:               4,
+		MaxSessionsPerWorkspace: 1,
+		MaxDeviceFilters:        2,
+		CapacityObserver:        observer,
+	})
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	defer hub.Close()
+	principal := Principal{Subject: "operator", WorkspaceIDs: map[string]struct{}{"ws-1": {}}}
+	session, err := hub.Connect(context.Background(), principal, "ws-1", newRecordingTransport())
+	if err != nil {
+		t.Fatalf("first Connect() error = %v", err)
+	}
+	if _, err := hub.Connect(context.Background(), principal, "ws-1", newRecordingTransport()); !errors.Is(err, ErrWorkspaceCapacityExceeded) {
+		t.Fatalf("second Connect() error = %v, want workspace capacity error", err)
+	}
+	if err := session.Subscribe(context.Background(), SubscriptionRequest{DeviceIDs: []string{"d-1", "d-2", "d-3"}}); !errors.Is(err, ErrSubscriptionTooBroad) {
+		t.Fatalf("Subscribe() error = %v, want device filter capacity error", err)
+	}
+	stats := hub.Stats()
+	if stats.ActiveSessions != 1 || stats.RejectedConnections != 1 || stats.RejectedSubscriptions != 1 {
+		t.Fatalf("Stats() = %+v, want one active and one rejection of each kind", stats)
+	}
+	if !observer.has("websocket", "workspace_session_limit") || !observer.has("websocket", "device_filter_limit") {
+		t.Fatalf("capacity events = %#v", observer.events)
+	}
+	if err := session.Close(); err != nil {
+		t.Fatalf("Close() error = %v", err)
+	}
+	replacement, err := hub.Connect(context.Background(), principal, "ws-1", newRecordingTransport())
+	if err != nil {
+		t.Fatalf("Connect() after close error = %v", err)
+	}
+	if err := replacement.Close(); err != nil {
+		t.Fatalf("replacement Close() error = %v", err)
+	}
+}
+
 func TestSessionRecoveryUsesSnapshotOrCursorReplay(t *testing.T) {
 	recovery := &fakeRecovery{
 		snapshot: []Event{{EventID: "snapshot-1", Type: "device.state_changed", WorkspaceID: "ws-1", Data: []byte(`{}`)}},
@@ -113,6 +155,29 @@ type recordingTransport struct {
 	block    chan struct{}
 	writeErr error
 	closed   bool
+}
+
+type recordingCapacityObserver struct {
+	mu     sync.Mutex
+	events []string
+}
+
+func (o *recordingCapacityObserver) RecordCapacityEvent(component, outcome string) {
+	o.mu.Lock()
+	o.events = append(o.events, component+":"+outcome)
+	o.mu.Unlock()
+}
+
+func (o *recordingCapacityObserver) has(component, outcome string) bool {
+	want := component + ":" + outcome
+	o.mu.Lock()
+	defer o.mu.Unlock()
+	for _, event := range o.events {
+		if event == want {
+			return true
+		}
+	}
+	return false
 }
 
 func newRecordingTransport() *recordingTransport {

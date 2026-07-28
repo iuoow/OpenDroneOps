@@ -26,6 +26,12 @@ time, complete its validation record, then commit before starting the next task.
 | 18 | Field continuity: reconnect UX and non-sensitive local drafts | Complete |
 | 19 | Consent-first diagnostic UX and Pilot quality gate | Complete |
 | 20 | Real Pilot 2 integration and authorized hardware-validation gate | Blocked: requires DJI credentials, supported model, authorized hardware, and security SOP; see `docs/development/validation/TASK20_GATE_READINESS.md` and `docs/development/gates/task20/` |
+| 21 | Capacity and quota contract | Complete; see `docs/architecture/21-capacity-and-quota-contract.md` and `docs/development/validation/TASK21_VALIDATION.md` |
+| 22 | Fairness, backpressure, and hot-key isolation | Planned |
+| 23 | Multi-instance realtime delivery and recovery | Planned |
+| 24 | Load, fault, and capacity verification harness | Planned |
+| 25 | Release automation and operational delivery | Planned |
+| 26 | Capacity visibility and operator experience | Planned |
 
 Task 20A is a completed preparation subtask: it adds a hardware-independent
 readiness/capability evaluator and conformance tests. It does not count Task 20
@@ -41,3 +47,7 @@ Tasks 14–19 form the Pilot Shell Foundation and are constrained by
 `docs/decisions/0013-pilot-shell-foundation-before-real-dji.md`. They do not
 enable real DJI, device mutation, flight control, or DRC capabilities. Task 20
 may begin only after its external gate is explicitly satisfied.
+
+Tasks 21-26 are Scale & Release Readiness work. They are independent of the
+blocked real Pilot 2 gate and must not imply that Task 20's external evidence
+has been supplied.

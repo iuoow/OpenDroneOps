@@ -27,8 +27,20 @@ func TestLoadUsesDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load() error = %v", err)
 	}
-	if cfg.HTTPAddr != ":8080" || cfg.WebSocketSendQueueSize != 256 {
+	if cfg.HTTPAddr != ":8080" || cfg.WebSocketSendQueueSize != 256 || cfg.WebSocketMaxSessionsPerWorkspace != 64 || cfg.WebSocketMaxDeviceFilters != 100 {
 		t.Fatalf("unexpected defaults: %+v", cfg)
+	}
+}
+
+func TestLoadRejectsNonPositiveCapacityLimits(t *testing.T) {
+	t.Setenv("POSTGRES_DSN", "postgres://local")
+	t.Setenv("MQTT_URL", "mqtt://localhost:1883")
+	t.Setenv("MQTT_CLIENT_ID", "test-client")
+	t.Setenv("WS_MAX_SESSIONS_PER_WORKSPACE", "0")
+
+	_, err := Load()
+	if err == nil || !strings.Contains(err.Error(), "capacity limits") {
+		t.Fatalf("expected capacity limit validation error, got %v", err)
 	}
 }
 

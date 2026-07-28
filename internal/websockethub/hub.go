@@ -6,14 +6,17 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
 var (
-	ErrUnauthorized        = errors.New("websocket subscription is unauthorized")
-	ErrSlowClient          = errors.New("websocket client is too slow")
-	ErrCursorExpired       = errors.New("websocket recovery cursor expired")
-	ErrRecoveryUnavailable = errors.New("websocket recovery provider unavailable")
+	ErrUnauthorized              = errors.New("websocket subscription is unauthorized")
+	ErrSlowClient                = errors.New("websocket client is too slow")
+	ErrWorkspaceCapacityExceeded = errors.New("websocket workspace session capacity exceeded")
+	ErrSubscriptionTooBroad      = errors.New("websocket subscription exceeds device filter capacity")
+	ErrCursorExpired             = errors.New("websocket recovery cursor expired")
+	ErrRecoveryUnavailable       = errors.New("websocket recovery provider unavailable")
 )
 
 type Principal struct {
@@ -67,21 +70,51 @@ type RecoveryProvider interface {
 }
 
 type Config struct {
-	QueueSize  int
-	Authorizer Authorizer
-	Recovery   RecoveryProvider
+	QueueSize               int
+	MaxSessionsPerWorkspace int
+	MaxDeviceFilters        int
+	Authorizer              Authorizer
+	Recovery                RecoveryProvider
+	CapacityObserver        CapacityObserver
+}
+
+// CapacityObserver receives low-cardinality capacity outcomes. It keeps the
+// Hub observable without coupling it to a metrics implementation.
+type CapacityObserver interface {
+	RecordCapacityEvent(component, outcome string)
+}
+
+type Stats struct {
+	ActiveSessions        int
+	RejectedConnections   uint64
+	RejectedSubscriptions uint64
+	SlowClientDisconnects uint64
+	TelemetryCoalesced    uint64
 }
 
 type Hub struct {
-	config   Config
-	mu       sync.RWMutex
-	sessions map[*Session]struct{}
-	closed   bool
+	config                Config
+	mu                    sync.RWMutex
+	sessions              map[*Session]struct{}
+	closed                bool
+	rejectedConnections   atomic.Uint64
+	rejectedSubscriptions atomic.Uint64
+	slowClientDisconnects atomic.Uint64
+	telemetryCoalesced    atomic.Uint64
 }
 
 func New(config Config) (*Hub, error) {
 	if config.QueueSize < 1 {
 		return nil, errors.New("websocket queue size must be positive")
+	}
+	if config.MaxSessionsPerWorkspace == 0 {
+		config.MaxSessionsPerWorkspace = 64
+	}
+	if config.MaxDeviceFilters == 0 {
+		config.MaxDeviceFilters = 100
+	}
+	if config.MaxSessionsPerWorkspace < 1 || config.MaxDeviceFilters < 1 {
+		return nil, errors.New("websocket capacity limits must be positive")
 	}
 	if config.Authorizer == nil {
 		config.Authorizer = WorkspaceAuthorizer{}
@@ -103,6 +136,11 @@ func (h *Hub) Connect(ctx context.Context, principal Principal, workspaceID stri
 	defer h.mu.Unlock()
 	if h.closed {
 		return nil, errors.New("websocket hub is closed")
+	}
+	if h.workspaceSessionCountLocked(workspaceID) >= h.config.MaxSessionsPerWorkspace {
+		h.rejectedConnections.Add(1)
+		h.recordCapacity("websocket", "workspace_session_limit")
+		return nil, ErrWorkspaceCapacityExceeded
 	}
 	session := &Session{
 		hub: h, principal: principal, workspaceID: workspaceID, transport: transport,
@@ -131,6 +169,8 @@ func (h *Hub) Publish(event Event) {
 			continue
 		}
 		if err := session.enqueue(event); errors.Is(err, ErrSlowClient) {
+			h.slowClientDisconnects.Add(1)
+			h.recordCapacity("websocket", "slow_client_disconnect")
 			h.remove(session)
 		}
 	}
@@ -161,6 +201,35 @@ func (h *Hub) remove(session *Session) {
 	session.closeOnce.Do(session.shutdown)
 }
 
+func (h *Hub) Stats() Stats {
+	h.mu.RLock()
+	activeSessions := len(h.sessions)
+	h.mu.RUnlock()
+	return Stats{
+		ActiveSessions:        activeSessions,
+		RejectedConnections:   h.rejectedConnections.Load(),
+		RejectedSubscriptions: h.rejectedSubscriptions.Load(),
+		SlowClientDisconnects: h.slowClientDisconnects.Load(),
+		TelemetryCoalesced:    h.telemetryCoalesced.Load(),
+	}
+}
+
+func (h *Hub) workspaceSessionCountLocked(workspaceID string) int {
+	count := 0
+	for session := range h.sessions {
+		if session.workspaceID == workspaceID {
+			count++
+		}
+	}
+	return count
+}
+
+func (h *Hub) recordCapacity(component, outcome string) {
+	if h.config.CapacityObserver != nil {
+		h.config.CapacityObserver.RecordCapacityEvent(component, outcome)
+	}
+}
+
 type Session struct {
 	hub         *Hub
 	principal   Principal
@@ -183,6 +252,11 @@ func (s *Session) Subscribe(ctx context.Context, request SubscriptionRequest) er
 		return ErrUnauthorized
 	}
 	request.WorkspaceID = s.workspaceID
+	if len(request.DeviceIDs) > s.hub.config.MaxDeviceFilters {
+		s.hub.rejectedSubscriptions.Add(1)
+		s.hub.recordCapacity("websocket", "device_filter_limit")
+		return ErrSubscriptionTooBroad
+	}
 	if err := s.hub.config.Authorizer.Authorize(ctx, s.principal, s.workspaceID, request); err != nil {
 		return err
 	}
@@ -224,9 +298,7 @@ func (s *Session) Subscribe(ctx context.Context, request SubscriptionRequest) er
 }
 
 func (s *Session) Close() error {
-	s.closeOnce.Do(func() {
-		s.shutdown()
-	})
+	s.hub.remove(s)
 	s.wg.Wait()
 	return nil
 }
@@ -259,6 +331,8 @@ func (s *Session) enqueue(event Event) error {
 				key = event.EventID
 			}
 			s.pendingTelemetry[key] = event
+			s.hub.telemetryCoalesced.Add(1)
+			s.hub.recordCapacity("websocket", "telemetry_coalesced")
 			return nil
 		}
 		return ErrSlowClient
@@ -273,7 +347,7 @@ func (s *Session) writeLoop() {
 			return
 		case event := <-s.queue:
 			if err := s.transport.Write(s.writerCtx, event); err != nil {
-				s.closeOnce.Do(s.shutdown)
+				s.hub.remove(s)
 				return
 			}
 			s.flushPending()

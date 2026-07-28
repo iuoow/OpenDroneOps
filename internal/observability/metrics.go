@@ -18,16 +18,21 @@ type requestMetric struct {
 // Registry is a deliberately small Prometheus text-format registry. It keeps
 // the HTTP boundary observable without introducing an exporter dependency.
 type Registry struct {
-	mu        sync.RWMutex
-	startedAt time.Time
-	requests  map[string]requestMetric
+	mu             sync.RWMutex
+	startedAt      time.Time
+	requests       map[string]requestMetric
+	capacityEvents map[string]uint64
 }
 
 func NewRegistry(now time.Time) *Registry {
 	if now.IsZero() {
 		now = time.Now().UTC()
 	}
-	return &Registry{startedAt: now, requests: make(map[string]requestMetric)}
+	return &Registry{
+		startedAt:      now,
+		requests:       make(map[string]requestMetric),
+		capacityEvents: make(map[string]uint64),
+	}
 }
 
 func (r *Registry) RecordHTTP(method, route string, status int, duration time.Duration) {
@@ -40,6 +45,18 @@ func (r *Registry) RecordHTTP(method, route string, status int, duration time.Du
 	metric.count++
 	metric.sum += duration.Seconds()
 	r.requests[key] = metric
+	r.mu.Unlock()
+}
+
+// RecordCapacityEvent records a low-cardinality overload or quota outcome.
+// Component and outcome must be controlled vocabulary values, never IDs.
+func (r *Registry) RecordCapacityEvent(component, outcome string) {
+	if r == nil || component == "" || outcome == "" {
+		return
+	}
+	key := component + "\x00" + outcome
+	r.mu.Lock()
+	r.capacityEvents[key]++
 	r.mu.Unlock()
 }
 
@@ -64,6 +81,15 @@ func (r *Registry) Render() string {
 	for key, value := range r.requests {
 		metrics[key] = value
 	}
+	capacityKeys := make([]string, 0, len(r.capacityEvents))
+	for key := range r.capacityEvents {
+		capacityKeys = append(capacityKeys, key)
+	}
+	sort.Strings(capacityKeys)
+	capacityEvents := make(map[string]uint64, len(r.capacityEvents))
+	for key, value := range r.capacityEvents {
+		capacityEvents[key] = value
+	}
 	startedAt := r.startedAt
 	r.mu.RUnlock()
 
@@ -82,6 +108,12 @@ func (r *Registry) Render() string {
 		fmt.Fprintf(&builder, "opendroneops_http_requests_total{%s} %d\n", labels, metric.count)
 		fmt.Fprintf(&builder, "opendroneops_http_request_duration_seconds_sum{%s} %.9f\n", labels, metric.sum)
 		fmt.Fprintf(&builder, "opendroneops_http_request_duration_seconds_count{%s} %d\n", labels, metric.count)
+	}
+	builder.WriteString("# HELP opendroneops_capacity_events_total Capacity, quota, and overload outcomes by component.\n")
+	builder.WriteString("# TYPE opendroneops_capacity_events_total counter\n")
+	for _, key := range capacityKeys {
+		parts := strings.Split(key, "\x00")
+		fmt.Fprintf(&builder, "opendroneops_capacity_events_total{component=%q,outcome=%q} %d\n", parts[0], parts[1], capacityEvents[key])
 	}
 	return builder.String()
 }
