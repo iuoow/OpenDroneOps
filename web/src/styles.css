@@ -247,6 +247,83 @@ small { color: var(--color-text-muted); font-size: var(--font-sm); }
   .device-list { grid-template-columns: 1fr; }
 }
 
+/* Task 30: incident triage queue and evidence-first alarm handling. */
+.alarms-v2 { max-width: 1540px; }
+.alarms-v2__heading { align-items: center; }
+.alarm-summary { display: flex; border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); background: var(--color-surface); padding: 5px 0; }
+.alarm-summary div { display: flex; min-width: 98px; flex-direction: column; gap: 1px; border-left: 1px solid var(--color-border-subtle); padding: 3px var(--space-4); }
+.alarm-summary div:first-child { border-left: 0; }
+.alarm-summary strong { font-size: var(--font-xl); font-variant-numeric: tabular-nums; }
+.alarm-summary span { color: var(--color-text-muted); font-size: 11px; }
+.alarms-v2__workspace { display: grid; grid-template-columns: minmax(340px, .8fr) minmax(520px, 1.2fr); gap: var(--space-3); align-items: stretch; }
+.alarm-queue-v2, .alarm-detail-v2 { min-height: 650px; border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); background: var(--color-surface); }
+.alarm-queue-v2 { overflow: hidden; }
+.alarm-queue-v2__header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); padding: var(--space-5) var(--space-5) var(--space-3); }
+.alarm-queue-v2__header h2 { margin-top: 2px; font-size: var(--font-lg); }
+.alarm-filter { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; border-bottom: 1px solid var(--color-border-subtle); padding: 0 var(--space-3); }
+.alarm-filter__item { display: inline-flex; min-height: 38px; align-items: center; justify-content: center; gap: 5px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--color-text-muted); font-size: var(--font-xs); font-weight: 700; }
+.alarm-filter__item span { color: var(--color-text-soft); font-size: 10px; }
+.alarm-filter__item:hover { color: var(--color-text); background: var(--color-surface-subtle); }
+.alarm-filter__item--active { border-bottom-color: var(--color-brand-primary); color: var(--color-brand-primary); }
+.alarm-filter__item--active span { color: currentColor; }
+.alarm-list-v2 { display: grid; gap: 5px; padding: var(--space-3); }
+.alarm-card { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); width: 100%; border: 1px solid var(--color-border-subtle); border-left: 3px solid var(--color-info); border-radius: 9px; background: var(--color-surface); padding: 11px 10px; color: var(--color-text); text-align: left; }
+.alarm-card:hover { border-color: var(--color-border); background: var(--color-surface-subtle); }
+.alarm-card--selected { border-color: color-mix(in srgb, var(--color-brand-primary) 48%, var(--color-border)); box-shadow: inset 2px 0 var(--color-brand-primary); background: color-mix(in srgb, var(--color-brand-primary) 3%, var(--color-surface)); }
+.alarm-card--danger { border-left-color: var(--color-danger); }
+.alarm-card--warning { border-left-color: var(--color-warning); }
+.alarm-card__icon { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 8px; background: color-mix(in srgb, var(--color-info) 8%, transparent); color: var(--color-info); }
+.alarm-card--danger .alarm-card__icon { background: color-mix(in srgb, var(--color-danger) 9%, transparent); color: var(--color-danger); }
+.alarm-card--warning .alarm-card__icon { background: color-mix(in srgb, var(--color-warning) 10%, transparent); color: var(--color-warning); }
+.alarm-card__body { display: grid; min-width: 0; gap: 4px; }
+.alarm-card__meta { display: flex; align-items: center; gap: var(--space-2); color: var(--color-text-muted); font-size: 10px; }
+.alarm-card__meta .status-badge { padding: 3px 6px; font-size: 10px; }
+.alarm-card__body strong { overflow: hidden; font-size: var(--font-sm); text-overflow: ellipsis; white-space: nowrap; }
+.alarm-card__body small { overflow: hidden; color: var(--color-text-muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.alarm-card__count { align-self: start; color: var(--color-text-muted); font-size: var(--font-xs); font-variant-numeric: tabular-nums; }
+.alarm-queue-v2__empty { min-height: 400px; }
+.alarm-detail-v2 { padding: var(--space-5); }
+.alarm-detail-v2__header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); border-bottom: 1px solid var(--color-border-subtle); padding-bottom: var(--space-5); }
+.alarm-detail-v2__title { display: flex; align-items: flex-start; gap: var(--space-3); }
+.alarm-detail-v2__signal { display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid color-mix(in srgb, var(--color-info) 28%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--color-info) 8%, transparent); color: var(--color-info); }
+.alarm-detail-v2__header--danger .alarm-detail-v2__signal { border-color: color-mix(in srgb, var(--color-danger) 35%, transparent); background: color-mix(in srgb, var(--color-danger) 9%, transparent); color: var(--color-danger); }
+.alarm-detail-v2__header--warning .alarm-detail-v2__signal { border-color: color-mix(in srgb, var(--color-warning) 35%, transparent); background: color-mix(in srgb, var(--color-warning) 9%, transparent); color: var(--color-warning); }
+.alarm-detail-v2__title h2 { margin-top: 2px; font-size: 22px; }
+.alarm-detail-v2__title p { margin-top: 4px; color: var(--color-text-muted); font-size: var(--font-sm); }
+.incident-recommendation { margin-top: var(--space-4); border: 1px solid color-mix(in srgb, var(--color-warning) 30%, var(--color-border-subtle)); border-radius: 9px; background: color-mix(in srgb, var(--color-warning) 6%, var(--color-surface)); padding: var(--space-3) var(--space-4); }
+.incident-recommendation__label { color: var(--color-warning); font-size: var(--font-xs); font-weight: 800; letter-spacing: .06em; }
+.incident-recommendation p { margin-top: 4px; font-size: var(--font-sm); line-height: 1.55; }
+.incident-evidence, .incident-handling { margin-top: var(--space-5); border-top: 1px solid var(--color-border-subtle); padding-top: var(--space-4); }
+.incident-evidence__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin-top: var(--space-3); border: 1px solid var(--color-border-subtle); background: var(--color-border-subtle); }
+.incident-evidence__grid div { min-height: 68px; background: var(--color-surface); padding: 11px; }
+.incident-evidence__grid dt { color: var(--color-text-muted); font-size: 11px; }
+.incident-evidence__grid dd { margin: 5px 0 0; font-size: var(--font-sm); font-variant-numeric: tabular-nums; }
+.incident-evidence__grid .freshness { font-size: 11px; }
+.incident-steps { display: grid; gap: 0; margin: var(--space-3) 0 0; padding: 0; list-style: none; }
+.incident-steps__item { position: relative; display: flex; min-height: 51px; align-items: flex-start; gap: var(--space-3); color: var(--color-text-muted); }
+.incident-steps__item::before { position: absolute; top: 25px; bottom: -1px; left: 11px; width: 1px; background: var(--color-border); content: ''; }
+.incident-steps__item:last-child::before { display: none; }
+.incident-steps__item > span { z-index: 1; display: grid; width: 23px; height: 23px; place-items: center; border: 1px solid var(--color-border); border-radius: 50%; background: var(--color-surface); color: var(--color-text-muted); font-size: 11px; font-weight: 800; }
+.incident-steps__item strong, .incident-steps__item small { display: block; }
+.incident-steps__item strong { padding-top: 2px; font-size: var(--font-sm); }
+.incident-steps__item small { margin-top: 3px; color: var(--color-text-muted); font-size: 11px; }
+.incident-steps__item--complete { color: var(--color-text); }
+.incident-steps__item--complete > span { border-color: var(--color-success); background: var(--color-success); color: white; }
+.incident-steps__item--current > span { border-color: var(--color-brand-primary); color: var(--color-brand-primary); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand-primary) 12%, transparent); }
+.alarm-detail-v2__actions { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-5); border-top: 1px solid var(--color-border-subtle); padding-top: var(--space-4); }
+.handling-owner { display: inline-flex; align-items: center; gap: 6px; color: var(--color-success); font-size: var(--font-sm); font-weight: 700; }
+@media (max-width: 1023px) {
+  .alarms-v2__workspace { grid-template-columns: 1fr; }
+  .alarm-queue-v2, .alarm-detail-v2 { min-height: auto; }
+}
+@media (max-width: 620px) {
+  .alarms-v2__heading { align-items: flex-start; flex-direction: column; }
+  .alarm-summary { width: 100%; }
+  .alarm-summary div { flex: 1; min-width: 0; }
+  .alarm-detail-v2 { padding: var(--space-4); }
+  .incident-evidence__grid { grid-template-columns: 1fr; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .map-device { transition: none; }
 }
