@@ -39,6 +39,7 @@ time, complete its validation record, then commit before starting the next task.
 | 31 | Command-center progress, evidence, and low-risk operation experience | Complete; see `docs/development/validation/TASK31_VALIDATION.md` |
 | 32 | Device inventory and evidence-first context experience | Complete; see `docs/development/validation/TASK32_VALIDATION.md` |
 | 33 | Investigation-oriented trajectory replay evidence experience | Complete; see `docs/development/validation/TASK33_VALIDATION.md` |
+| 34 | Runtime evidence and management-plane boundary experience | Complete; see `docs/development/validation/TASK34_VALIDATION.md` |
 
 Task 20A is a completed preparation subtask: it adds a hardware-independent
 readiness/capability evaluator and conformance tests. It does not count Task 20

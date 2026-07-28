@@ -709,3 +709,52 @@ small { color: var(--color-text-muted); font-size: var(--font-sm); }
   .replay-map-v2__caption time { width: 100%; margin-left: 0; }
   .replay-evidence-v2 { padding: var(--space-4); }
 }
+
+/* Task 34: web-visible runtime evidence and management-plane boundary. */
+.runtime-v2 { max-width: 1800px; }
+.runtime-v2__heading { align-items: center; margin-bottom: var(--space-4); }
+.runtime-v2__heading h1 { font-size: clamp(27px, 2.2vw, 34px); }
+.runtime-v2__heading .page-heading__summary { max-width: 660px; }
+.runtime-summary { display: flex; gap: 0; border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); background: var(--color-surface); padding: 5px 0; }
+.runtime-summary div { display: flex; min-width: 110px; flex-direction: column; border-left: 1px solid var(--color-border-subtle); padding: 3px var(--space-4); }
+.runtime-summary div:first-child { border-left: 0; }
+.runtime-summary strong { font-size: 20px; font-variant-numeric: tabular-nums; }
+.runtime-summary span { margin-top: 2px; color: var(--color-text-muted); font-size: 11px; }
+.runtime-v2__workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-3); }
+.runtime-connection, .runtime-command-flow, .runtime-management { min-width: 0; border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); background: var(--color-surface); padding: var(--space-5); }
+.runtime-management { grid-column: span 2; }
+.runtime-panel__header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
+.runtime-panel__header h2 { font-size: var(--font-lg); }
+.runtime-connection__fact, .runtime-command-flow__summary, .runtime-management__notice { display: flex; align-items: flex-start; gap: var(--space-3); margin-top: var(--space-4); border: 1px solid var(--color-border-subtle); border-radius: 8px; background: var(--color-surface-subtle); padding: var(--space-3); }
+.runtime-connection__fact > .app-icon, .runtime-management__notice > .app-icon { color: var(--color-brand-primary); }
+.runtime-connection__fact strong, .runtime-connection__fact span { display: block; }
+.runtime-connection__fact strong, .runtime-command-flow__summary strong, .runtime-management__notice strong { font-size: var(--font-sm); }
+.runtime-connection__fact span, .runtime-command-flow__summary p, .runtime-management__notice p { margin-top: 4px; color: var(--color-text-muted); font-size: var(--font-sm); line-height: 1.45; }
+.runtime-connection__steps { display: grid; gap: 0; margin: var(--space-4) 0 0; padding: 0; list-style: none; }
+.runtime-connection__step { position: relative; display: flex; min-height: 52px; align-items: flex-start; gap: var(--space-3); color: var(--color-text-muted); }
+.runtime-connection__step::before { position: absolute; top: 24px; bottom: -2px; left: 10px; width: 1px; background: var(--color-border); content: ''; }
+.runtime-connection__step:last-child::before { display: none; }
+.runtime-connection__step > span { z-index: 1; display: grid; width: 22px; height: 22px; place-items: center; border: 1px solid var(--color-border); border-radius: 50%; background: var(--color-surface); font-size: 10px; font-weight: 800; }
+.runtime-connection__step strong, .runtime-connection__step small { display: block; }
+.runtime-connection__step strong { padding-top: 2px; color: var(--color-text); font-size: var(--font-sm); }
+.runtime-connection__step small { margin-top: 3px; font-size: 11px; line-height: 1.4; }
+.runtime-connection__step--complete > span { border-color: var(--color-success); background: var(--color-success); color: var(--color-surface); }
+.runtime-connection__step--current > span { border-color: var(--color-brand-primary); color: var(--color-brand-primary); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand-primary) 12%, transparent); }
+.runtime-command-flow__signal { display: grid; width: 37px; height: 37px; flex: 0 0 auto; place-items: center; border-radius: 8px; background: color-mix(in srgb, var(--color-success) 10%, transparent); color: var(--color-success); }
+.runtime-command-flow__signal--attention { background: color-mix(in srgb, var(--color-warning) 12%, transparent); color: var(--color-warning); }
+.runtime-command-flow__list { display: grid; gap: 5px; margin-top: var(--space-3); }
+.runtime-command-flow__list > div { display: flex; align-items: center; gap: var(--space-3); border: 1px solid var(--color-border-subtle); border-radius: 7px; padding: 8px 9px; }
+.runtime-command-flow__list span { min-width: 0; }
+.runtime-command-flow__list strong, .runtime-command-flow__list small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.runtime-command-flow__list strong { font-size: var(--font-sm); }
+.runtime-command-flow__list small { margin-top: 3px; color: var(--color-text-muted); font-size: 11px; }
+.runtime-command-flow__empty { display: grid; gap: 4px; margin-top: var(--space-3); color: var(--color-text-muted); font-size: var(--font-sm); line-height: 1.45; }
+.runtime-management__private { border: 1px solid var(--color-border); border-radius: var(--radius-pill); color: var(--color-text-muted); padding: 4px 7px; font-size: 11px; font-weight: 700; }
+.runtime-management__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; overflow: hidden; margin: var(--space-4) 0 0; border: 1px solid var(--color-border-subtle); border-radius: 8px; background: var(--color-border-subtle); }
+.runtime-management__grid div { min-height: 99px; background: var(--color-surface); padding: var(--space-3); }
+.runtime-management__grid dt { color: var(--color-text-muted); font-size: 11px; }
+.runtime-management__grid dd { margin: 6px 0 4px; font-size: var(--font-sm); font-weight: 700; }
+.runtime-management__grid small { font-size: 11px; line-height: 1.4; }
+.runtime-management__footnote { margin-top: var(--space-4); color: var(--color-text-muted); font-size: 11px; line-height: 1.45; }
+@media (max-width: 1023px) { .runtime-v2__workspace { grid-template-columns: 1fr; } .runtime-management { grid-column: auto; } .runtime-management__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .runtime-v2__heading { align-items: flex-start; flex-direction: column; } .runtime-summary { width: 100%; } .runtime-summary div { flex: 1; min-width: 0; padding: 3px var(--space-3); } .runtime-connection, .runtime-command-flow, .runtime-management { padding: var(--space-4); } .runtime-management__grid { grid-template-columns: 1fr; } }
