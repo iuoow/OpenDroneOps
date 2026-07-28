@@ -287,7 +287,7 @@ function severityLabel(severity?: string) {
         </div>
       </div>
 
-      <div v-if="activeNavigation === 'home'" class="pilot-shell__summary-grid" aria-label="当前设备与告警摘要">
+      <div v-if="activeNavigation === 'home'" id="pilot-view-home" class="pilot-shell__summary-grid" data-testid="pilot-view-home" aria-label="当前设备与告警摘要">
         <article>
           <p class="pilot-shell__eyebrow">CURRENT DEVICE</p>
           <h3>{{ deviceTitle() }}</h3>
@@ -346,7 +346,7 @@ function severityLabel(severity?: string) {
         <p v-else class="pilot-shell__draft-empty">暂无本机草稿</p>
       </section>
 
-      <section v-else-if="activeNavigation === 'device'" class="pilot-shell__detail-panel" aria-labelledby="pilot-device-title">
+      <section v-else-if="activeNavigation === 'device'" id="pilot-view-device" class="pilot-shell__detail-panel" data-testid="pilot-view-device" aria-labelledby="pilot-device-title">
         <p class="pilot-shell__eyebrow">DEVICE DETAIL</p>
         <h2 id="pilot-device-title">{{ deviceTitle() }}</h2>
         <dl v-if="currentDevice" class="pilot-shell__detail-grid">
@@ -361,7 +361,7 @@ function severityLabel(severity?: string) {
         <p class="pilot-shell__readonly-note">只读详情 · 共 {{ devices.length }} 个可见设备</p>
       </section>
 
-      <section v-else-if="activeNavigation === 'alerts'" class="pilot-shell__detail-panel" aria-labelledby="pilot-alerts-title">
+      <section v-else-if="activeNavigation === 'alerts'" id="pilot-view-alerts" class="pilot-shell__detail-panel" data-testid="pilot-view-alerts" aria-labelledby="pilot-alerts-title">
         <p class="pilot-shell__eyebrow">ACTIVE ALERTS</p>
         <h2 id="pilot-alerts-title">现场告警（{{ activeAlarms.length }}）</h2>
         <ul v-if="activeAlarms.length" class="pilot-shell__alert-list">
@@ -375,7 +375,7 @@ function severityLabel(severity?: string) {
         <p class="pilot-shell__readonly-note">仅供查看，不提供确认、关闭或批量操作。</p>
       </section>
 
-      <section v-else class="pilot-shell__detail-panel" aria-labelledby="pilot-more-title">
+      <section v-else id="pilot-view-more" class="pilot-shell__detail-panel" data-testid="pilot-view-more" aria-labelledby="pilot-more-title">
         <p class="pilot-shell__eyebrow">FOUNDATION STATUS</p>
         <h2 id="pilot-more-title">只读现场模式</h2>
         <p>Bridge：{{ bridge.kind }} · 实时状态：{{ cloudStatusText }}</p>
@@ -445,6 +445,7 @@ function severityLabel(severity?: string) {
         v-for="item in navigation"
         :key="item.id"
         type="button"
+        :data-testid="`pilot-nav-${item.id}`"
         :aria-pressed="activeNavigation === item.id"
         :class="{ 'is-active': activeNavigation === item.id }"
         @click="activeNavigation = item.id"

@@ -25,6 +25,10 @@ the public demo route deliberately, so it remains deterministic and safe.
   demo overview. `landmark-one-main` is excluded because the embedded Pilot
   entry point is independently mounted and is outside this desktop-shell
   assertion.
+- The separate Pilot entry runs at a 390 px field viewport under Browser Mock.
+  It verifies all compact views, 44 px navigation targets, local-only draft
+  continuity, and the consent-first diagnostic summary flow. It does not use
+  a Pilot 2 bridge, real hardware, credentials, filesystem access, or upload.
 
 ## Visual diagnostics
 

@@ -43,6 +43,7 @@ time, complete its validation record, then commit before starting the next task.
 | 35 | Cross-page state consistency and accessibility quality gate | Complete; see `docs/development/validation/TASK35_VALIDATION.md` |
 | 36 | Real-backend UI resilience and recovery evidence | Complete; see `docs/development/validation/TASK36_VALIDATION.md` |
 | 37 | Browser E2E critical paths and visual/accessibility diagnostics | Complete; see `docs/development/validation/TASK37_VALIDATION.md` and `docs/development/ui-e2e-quality-gate.md` |
+| 38 | Pilot Browser Mock E2E and touch-first quality gate | Complete; see `docs/development/validation/TASK38_VALIDATION.md` and `docs/development/ui-e2e-quality-gate.md` |
 
 Task 20A is a completed preparation subtask: it adds a hardware-independent
 readiness/capability evaluator and conformance tests. It does not count Task 20
