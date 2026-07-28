@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/iuoow/OpenDroneOps/internal/buildinfo"
 	"github.com/iuoow/OpenDroneOps/internal/config"
 	"github.com/iuoow/OpenDroneOps/internal/httpapi"
 	"github.com/iuoow/OpenDroneOps/internal/platform/logging"
@@ -19,6 +20,7 @@ func main() {
 		os.Exit(2)
 	}
 	logger := logging.New(cfg.AppEnv)
+	logger.Info("server starting", "build", buildinfo.Current().String())
 	ctx, stop := signals.Context(context.Background())
 	defer stop()
 

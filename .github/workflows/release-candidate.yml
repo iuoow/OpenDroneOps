@@ -1,0 +1,40 @@
+name: Release Candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: SemVer release candidate, for example v0.1.0-rc.1
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [server, worker, migrate]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate version
+        env:
+          VERSION: ${{ inputs.version }}
+        run: test "${VERSION}" != "" && echo "${VERSION}" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$'
+      - name: Build immutable candidate image archive
+        env:
+          VERSION: ${{ inputs.version }}
+          COMMIT: ${{ github.sha }}
+        run: |
+          docker build --target "${{ matrix.target }}" --build-arg "VERSION=${VERSION}" --build-arg "COMMIT=${COMMIT}" --build-arg "BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)" -t "opendroneops/${{ matrix.target }}:${VERSION}" .
+          docker save "opendroneops/${{ matrix.target }}:${VERSION}" | gzip > "opendroneops-${{ matrix.target }}-${VERSION}.tar.gz"
+          sha256sum "opendroneops-${{ matrix.target }}-${VERSION}.tar.gz" > "opendroneops-${{ matrix.target }}-${VERSION}.tar.gz.sha256"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: opendroneops-${{ matrix.target }}-${{ inputs.version }}
+          path: |
+            opendroneops-${{ matrix.target }}-${{ inputs.version }}.tar.gz
+            opendroneops-${{ matrix.target }}-${{ inputs.version }}.tar.gz.sha256
+          if-no-files-found: error

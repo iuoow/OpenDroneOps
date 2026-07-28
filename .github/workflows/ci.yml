@@ -71,3 +71,20 @@ jobs:
       - name: Stop infrastructure
         if: always()
         run: docker compose -f deployment/docker-compose.blueprint.yaml down -v
+
+  delivery-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build deployable application images without publishing
+        run: |
+          docker build --target server --build-arg VERSION=ci --build-arg COMMIT=${{ github.sha }} --build-arg BUILD_TIME=ci -t opendroneops/server:ci .
+          docker build --target worker --build-arg VERSION=ci --build-arg COMMIT=${{ github.sha }} --build-arg BUILD_TIME=ci -t opendroneops/worker:ci .
+          docker build --target migrate --build-arg VERSION=ci --build-arg COMMIT=${{ github.sha }} --build-arg BUILD_TIME=ci -t opendroneops/migrate:ci .
+      - name: Validate production application Compose contract
+        env:
+          OPENDRONEOPS_SERVER_IMAGE: opendroneops/server:ci
+          OPENDRONEOPS_WORKER_IMAGE: opendroneops/worker:ci
+          OPENDRONEOPS_MIGRATE_IMAGE: opendroneops/migrate:ci
+          RELEASE_ENV_FILE: ./release.env.example
+        run: docker compose --env-file deployment/release.env.example -f deployment/docker-compose.release.yaml config --quiet

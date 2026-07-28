@@ -30,7 +30,7 @@ time, complete its validation record, then commit before starting the next task.
 | 22 | Fairness, backpressure, and hot-key isolation | Complete; see `docs/architecture/22-fairness-backpressure-and-hot-keys.md` and `docs/development/validation/TASK22_VALIDATION.md` |
 | 23 | Multi-instance realtime delivery and recovery | Complete; see `docs/architecture/23-multi-instance-realtime-and-recovery.md` and `docs/development/validation/TASK23_VALIDATION.md` |
 | 24 | Load, fault, and capacity verification harness | Complete; see `docs/architecture/24-load-fault-and-capacity-verification.md` and `docs/development/validation/TASK24_VALIDATION.md` |
-| 25 | Release automation and operational delivery | Planned |
+| 25 | Release automation and operational delivery | Complete; see `docs/architecture/25-release-and-operations-delivery.md` and `docs/development/validation/TASK25_VALIDATION.md` |
 | 26 | Capacity visibility and operator experience | Planned |
 
 Task 20A is a completed preparation subtask: it adds a hardware-independent

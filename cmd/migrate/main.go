@@ -7,11 +7,13 @@ import (
 	"os"
 	"time"
 
+	"github.com/iuoow/OpenDroneOps/internal/buildinfo"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 )
 
 func main() {
+	slog.Info("migration starting", "build", buildinfo.Current().String())
 	dsn := os.Getenv("POSTGRES_DSN")
 	if dsn == "" {
 		slog.Error("configuration error", "error", "POSTGRES_DSN is required")

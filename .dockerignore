@@ -1,0 +1,8 @@
+.git
+.codex
+.agents
+dist
+web/node_modules
+web/dist
+deployment/*.env
+deployment/data

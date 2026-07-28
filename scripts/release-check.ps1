@@ -18,5 +18,11 @@ $env:MOSQUITTO_IMAGE = 'eclipse-mosquitto:2.1.2-alpine'
 $env:POSTGRES_PASSWORD = 'release-check-only'
 docker compose -f deployment/docker-compose.blueprint.yaml config --quiet
 
+$env:OPENDRONEOPS_SERVER_IMAGE = 'opendroneops/server:release-check'
+$env:OPENDRONEOPS_WORKER_IMAGE = 'opendroneops/worker:release-check'
+$env:OPENDRONEOPS_MIGRATE_IMAGE = 'opendroneops/migrate:release-check'
+$env:RELEASE_ENV_FILE = './release.env.example'
+docker compose --env-file deployment/release.env.example -f deployment/docker-compose.release.yaml config --quiet
+
 git diff --check
 Write-Output 'OpenDroneOps release checks passed.'

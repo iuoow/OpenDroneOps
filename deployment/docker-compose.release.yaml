@@ -1,0 +1,29 @@
+# Application deployment overlay. Infrastructure is intentionally external:
+# provide immutable image digests and a secret-backed deployment/release.env.
+services:
+  migrate:
+    image: ${OPENDRONEOPS_MIGRATE_IMAGE:?set immutable migrate image digest}
+    env_file: ${RELEASE_ENV_FILE:-./release.env}
+    restart: "no"
+
+  server:
+    image: ${OPENDRONEOPS_SERVER_IMAGE:?set immutable server image digest}
+    env_file: ${RELEASE_ENV_FILE:-./release.env}
+    ports:
+      - "${SERVER_BIND:?set host IP and host port}:8080"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    read_only: true
+    tmpfs: ["/tmp"]
+
+  worker:
+    image: ${OPENDRONEOPS_WORKER_IMAGE:?set immutable worker image digest}
+    env_file: ${RELEASE_ENV_FILE:-./release.env}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    read_only: true
+    tmpfs: ["/tmp"]
