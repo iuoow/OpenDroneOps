@@ -18,6 +18,8 @@ Before publishing, the release owner must also record:
 - production MQTT TLS, broker ACL, unique credentials and secret delivery;
 - a load/fault result for bounded MQTT queues, WebSocket slow clients, Outbox
   retry recovery and one server restart;
+- the JSON output from `scripts/capacity-check.ps1` plus a separate
+  infrastructure-backed capacity/fault report for the intended deployment;
 - the monitoring location for the loopback-only `/metrics` management endpoint.
 
 The public API process must not expose `/metrics`. `APP_ENV=production` rejects
