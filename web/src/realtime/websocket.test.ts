@@ -85,4 +85,28 @@ describe('RealtimeClient', () => {
     client.disconnect()
     vi.useRealTimers()
   })
+
+  it('allows Pilot consumers to subscribe without the command channel', () => {
+    let socket: FakeSocket | undefined
+    const client = new RealtimeClient({
+      workspaceId: 'workspace-1',
+      channels: ['telemetry', 'state', 'alarm'],
+      WebSocketImpl: class {
+        static OPEN = 1
+        constructor() {
+          socket = new FakeSocket()
+          return socket as unknown as WebSocket
+        }
+      } as unknown as typeof WebSocket,
+    })
+
+    client.connect()
+    socket?.open()
+    expect(JSON.parse(socket?.sent[0] ?? '{}').data.channels).toEqual([
+      'telemetry',
+      'state',
+      'alarm',
+    ])
+    client.disconnect()
+  })
 })

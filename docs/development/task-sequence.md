@@ -22,7 +22,7 @@ time, complete its validation record, then commit before starting the next task.
 | 14 | Pilot Shell foundation contracts, safety boundaries, and bridge test plan | Complete |
 | 15 | Separate Pilot entry point and browser Mock Bridge | Complete |
 | 16 | Touch-first, high-contrast Pilot shell and bootstrap UX | Complete |
-| 17 | Read-only Pilot Home with snapshot/WebSocket recovery | Planned |
+| 17 | Read-only Pilot Home with snapshot/WebSocket recovery | Complete |
 | 18 | Field continuity: reconnect UX and non-sensitive local drafts | Planned |
 | 19 | Consent-first diagnostic UX and Pilot quality gate | Planned |
 | 20 | Real Pilot 2 integration and authorized hardware-validation gate | Blocked: requires DJI credentials, supported model, authorized hardware, and security SOP |

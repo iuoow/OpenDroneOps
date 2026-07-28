@@ -1,11 +1,13 @@
 import type { WebSocketEnvelope } from '../types/contracts'
 
 export type RealtimeStatus = 'idle' | 'connecting' | 'connected' | 'recovering' | 'disconnected'
+export type RealtimeChannel = 'telemetry' | 'state' | 'alarm' | 'command'
 
 export interface RealtimeOptions {
   workspaceId: string
   url?: string
   cursor?: string
+  channels?: readonly RealtimeChannel[]
   WebSocketImpl?: typeof WebSocket
   onStatus?: (status: RealtimeStatus, detail?: string) => void
   onEvent?: (event: WebSocketEnvelope) => void
@@ -81,7 +83,10 @@ export class RealtimeClient {
       JSON.stringify({
         type: 'subscription.set',
         request_id: crypto.randomUUID(),
-        data: { channels: ['telemetry', 'state', 'alarm', 'command'], cursor: this.cursor || undefined },
+        data: {
+          channels: this.options.channels ?? ['telemetry', 'state', 'alarm', 'command'],
+          cursor: this.cursor || undefined,
+        },
       }),
     )
   }

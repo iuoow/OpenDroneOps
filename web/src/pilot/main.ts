@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import PilotBootstrapApp from './PilotBootstrapApp.vue'
 import { type PilotRuntimeConfig } from './bridge'
 import { BrowserMockPilotBridge } from './mockBridge'
+import { createPilotReadModel } from './readModel'
 import './styles.css'
 
 const config: PilotRuntimeConfig = {
@@ -18,4 +19,10 @@ const config: PilotRuntimeConfig = {
 createApp(PilotBootstrapApp, {
   bridge: new BrowserMockPilotBridge(),
   config,
+  readModel: createPilotReadModel({
+    workspaceId: config.workspaceId,
+    apiBaseUrl: config.api.baseUrl,
+    websocketUrl: config.websocket.url,
+    demo: import.meta.env.VITE_DEMO_MODE !== 'false',
+  }),
 }).mount('#pilot-app')

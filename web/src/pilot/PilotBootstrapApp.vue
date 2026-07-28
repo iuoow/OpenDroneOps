@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import type { PilotBridgeAdapter, PilotRuntimeConfig, PilotStartupState } from './bridge'
 import { bootstrapPilot } from './bootstrap'
+import type { PilotReadModel } from './readModel'
 
 const props = defineProps<{
   bridge: PilotBridgeAdapter
   config: PilotRuntimeConfig
+  readModel: PilotReadModel
 }>()
 
 const state = ref<PilotStartupState>({ phase: 'detecting' })
@@ -51,6 +53,29 @@ const currentStep = computed(() => {
   const index = startupSteps.findIndex((step) => step.phase === state.value.phase)
   return index < 0 ? startupSteps.length : index
 })
+const currentDevice = computed(() => props.readModel.currentDevice.value)
+const currentAlarm = computed(() => props.readModel.currentAlarm.value)
+const devices = computed(() => props.readModel.devices.value)
+const activeAlarms = computed(() => props.readModel.activeAlarms.value)
+const dataLoading = computed(() => props.readModel.loading.value)
+const dataError = computed(() => props.readModel.error.value)
+const dataStale = computed(() => props.readModel.stale.value)
+const connection = computed(() => props.readModel.connection.value)
+const connectionDetail = computed(() => props.readModel.connectionDetail.value)
+const cloudStatusClass = computed(() => ({
+  'is-ready': connection.value === 'connected' && !dataStale.value,
+  'is-warning': connection.value === 'connecting' || connection.value === 'recovering' || dataStale.value,
+  'is-offline': connection.value === 'disconnected' || Boolean(dataError.value),
+}))
+const cloudStatusText = computed(() => {
+  if (dataError.value) return '快照失败'
+  if (connection.value === 'disconnected') return '已断开'
+  if (connection.value === 'recovering') return '恢复中'
+  if (connection.value === 'connecting') return '连接中'
+  if (dataStale.value) return '数据陈旧'
+  if (connection.value === 'connected') return '已连接'
+  return dataLoading.value ? '加载中' : '待连接'
+})
 
 function failureText(code: Extract<PilotStartupState, { phase: 'failed' }>['code']) {
   switch (code) {
@@ -69,16 +94,39 @@ function failureText(code: Extract<PilotStartupState, { phase: 'failed' }>['code
 
 async function start() {
   state.value = { phase: 'detecting' }
-  await bootstrapPilot({
+  const result = await bootstrapPilot({
     bridge: props.bridge,
     config: props.config,
     onState: (next) => {
       state.value = next
     },
   })
+  if (result.phase === 'ready') await props.readModel.hydrate()
 }
 
 onMounted(() => void start())
+onUnmounted(() => props.readModel.stop())
+
+function deviceTitle() {
+  return currentDevice.value?.product_model || currentDevice.value?.serial_number || '暂无设备'
+}
+
+function alarmTitle() {
+  return currentAlarm.value?.alarm_type || '当前无活动告警'
+}
+
+function deviceUpdatedAt() {
+  const value = currentDevice.value?.server_time || currentDevice.value?.updated_at
+  return value ? new Date(value).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '未知'
+}
+
+function batteryLabel() {
+  return currentDevice.value?.battery_percent == null ? '未知' : `${currentDevice.value.battery_percent}%`
+}
+
+function severityLabel(severity?: string) {
+  return severity === 'CRITICAL' ? '严重' : severity === 'WARNING' ? '警告' : '提示'
+}
 </script>
 
 <template>
@@ -90,8 +138,8 @@ onMounted(() => void start())
       </div>
       <div class="pilot-shell__connection" aria-label="连接状态">
         <span class="pilot-shell__connection-item">
-          <span aria-hidden="true" class="pilot-shell__status-dot" :class="{ 'is-ready': state.phase === 'ready' }"></span>
-          云端 {{ state.phase === 'ready' ? '已连接' : '初始化中' }}
+          <span aria-hidden="true" class="pilot-shell__status-dot" :class="cloudStatusClass"></span>
+          云端 {{ state.phase === 'ready' ? cloudStatusText : '初始化中' }}
         </span>
         <span class="pilot-shell__connection-item">
           <span aria-hidden="true" class="pilot-shell__status-dot" :class="{ 'is-ready': state.phase === 'ready' }"></span>
@@ -132,29 +180,90 @@ onMounted(() => void start())
     </section>
 
     <section v-else class="pilot-shell__home" data-testid="pilot-ready-shell" aria-label="Pilot 现场主页">
+      <div
+        v-if="dataLoading || dataError || dataStale || connection === 'recovering' || connection === 'disconnected'"
+        class="pilot-shell__data-state"
+        :class="{ 'is-error': dataError || connection === 'disconnected', 'is-warning': dataStale || connection === 'recovering' }"
+        data-testid="pilot-data-state"
+        role="status"
+        aria-live="polite"
+      >
+        <strong v-if="dataLoading">正在加载只读现场快照</strong>
+        <strong v-else-if="dataError">{{ dataError }}</strong>
+        <strong v-else-if="connection === 'disconnected'">实时连接已断开</strong>
+        <strong v-else-if="connection === 'recovering'">正在从恢复游标继续实时数据</strong>
+        <strong v-else>当前数据可能已陈旧</strong>
+        <span v-if="connectionDetail">{{ connectionDetail }}</span>
+        <button v-if="dataError" type="button" @click="readModel.hydrate">重新加载快照</button>
+      </div>
+
       <div class="pilot-shell__task-card">
         <p class="pilot-shell__eyebrow">CURRENT TASK</p>
-        <h2>现场巡检 · Mock 024</h2>
-        <p>当前为浏览器 Mock Bridge 演示。实时设备与告警数据将在后续只读任务中接入。</p>
+        <h2>现场巡检 · 只读态势</h2>
+        <p>当前为浏览器 Mock Bridge 演示。数据来自只读快照与实时事件，不提供任何控制操作。</p>
         <div class="pilot-shell__map-placeholder" role="img" aria-label="任务区域预览占位图">
           <span>任务区域</span>
-          <span class="pilot-shell__map-marker" aria-hidden="true">OD</span>
+          <span class="pilot-shell__map-marker" aria-hidden="true">{{ currentDevice ? 'DJI' : 'OD' }}</span>
           <span class="pilot-shell__map-grid" aria-hidden="true"></span>
         </div>
       </div>
 
-      <div class="pilot-shell__summary-grid" aria-label="当前设备与告警摘要">
+      <div v-if="activeNavigation === 'home'" class="pilot-shell__summary-grid" aria-label="当前设备与告警摘要">
         <article>
           <p class="pilot-shell__eyebrow">CURRENT DEVICE</p>
-          <h3>等待实时设备数据</h3>
-          <p>Task 17 将通过既有快照和 WebSocket 契约填充此区域。</p>
+          <h3>{{ deviceTitle() }}</h3>
+          <p v-if="currentDevice">
+            {{ currentDevice.status }} · 电量 {{ batteryLabel() }} · {{ currentDevice.mode || '模式未知' }}
+          </p>
+          <p v-else>当前 Workspace 没有可显示的设备。</p>
+          <small>更新于 {{ deviceUpdatedAt() }}</small>
         </article>
         <article>
           <p class="pilot-shell__eyebrow">ACTIVE ALERT</p>
-          <h3>等待实时告警数据</h3>
-          <p>仅展示只读现场告警；不会在 Pilot Shell 中确认或关闭告警。</p>
+          <h3>{{ alarmTitle() }}</h3>
+          <p v-if="currentAlarm">
+            {{ severityLabel(currentAlarm.severity) }} · 出现 {{ currentAlarm.occurrence_count }} 次
+          </p>
+          <p v-else>当前没有未解决告警。</p>
+          <small>仅供查看；Pilot Shell 不确认或关闭告警。</small>
         </article>
       </div>
+
+      <section v-else-if="activeNavigation === 'device'" class="pilot-shell__detail-panel" aria-labelledby="pilot-device-title">
+        <p class="pilot-shell__eyebrow">DEVICE DETAIL</p>
+        <h2 id="pilot-device-title">{{ deviceTitle() }}</h2>
+        <dl v-if="currentDevice" class="pilot-shell__detail-grid">
+          <div><dt>序列号</dt><dd>{{ currentDevice.serial_number }}</dd></div>
+          <div><dt>状态</dt><dd>{{ currentDevice.status }}</dd></div>
+          <div><dt>电量</dt><dd>{{ batteryLabel() }}</dd></div>
+          <div><dt>模式</dt><dd>{{ currentDevice.mode || '未知' }}</dd></div>
+          <div><dt>高度</dt><dd>{{ currentDevice.altitude == null ? '未知' : `${currentDevice.altitude} m` }}</dd></div>
+          <div><dt>数据版本</dt><dd>{{ currentDevice.state_version ?? '未知' }}</dd></div>
+        </dl>
+        <p v-else>当前 Workspace 没有可显示的设备。</p>
+        <p class="pilot-shell__readonly-note">只读详情 · 共 {{ devices.length }} 个可见设备</p>
+      </section>
+
+      <section v-else-if="activeNavigation === 'alerts'" class="pilot-shell__detail-panel" aria-labelledby="pilot-alerts-title">
+        <p class="pilot-shell__eyebrow">ACTIVE ALERTS</p>
+        <h2 id="pilot-alerts-title">现场告警（{{ activeAlarms.length }}）</h2>
+        <ul v-if="activeAlarms.length" class="pilot-shell__alert-list">
+          <li v-for="alarm in activeAlarms" :key="alarm.id">
+            <span class="pilot-shell__severity" :data-severity="alarm.severity">{{ severityLabel(alarm.severity) }}</span>
+            <div><strong>{{ alarm.alarm_type }}</strong><small>{{ alarm.device_id }} · {{ alarm.status }}</small></div>
+            <span>{{ alarm.occurrence_count }} 次</span>
+          </li>
+        </ul>
+        <p v-else>当前没有未解决告警。</p>
+        <p class="pilot-shell__readonly-note">仅供查看，不提供确认、关闭或批量操作。</p>
+      </section>
+
+      <section v-else class="pilot-shell__detail-panel" aria-labelledby="pilot-more-title">
+        <p class="pilot-shell__eyebrow">FOUNDATION STATUS</p>
+        <h2 id="pilot-more-title">只读现场模式</h2>
+        <p>Bridge：{{ bridge.kind }} · 实时状态：{{ cloudStatusText }}</p>
+        <p class="pilot-shell__readonly-note">真实 DJI、诊断上传、第三方应用和设备控制仍未启用。</p>
+      </section>
     </section>
 
     <nav v-if="state.phase === 'ready'" class="pilot-shell__navigation" aria-label="Pilot 主导航">

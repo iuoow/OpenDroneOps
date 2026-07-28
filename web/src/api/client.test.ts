@@ -59,4 +59,22 @@ describe('ApiClient', () => {
     expect(String(url)).toContain('cursor=next-page')
     expect(((init as RequestInit).headers as Headers).get('X-Workspace-ID')).toBe('workspace-1')
   })
+
+  it('loads a read-only Pilot snapshot without command data', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(async (input) => {
+      const url = String(input)
+      if (url.includes('/devices')) return new Response(JSON.stringify({ items: [{ id: 'device-1' }] }))
+      if (url.includes('/alarms')) return new Response(JSON.stringify({ items: [{ id: 'alarm-1' }] }))
+      return new Response(JSON.stringify({ items: [], next_cursor: 'pilot-cursor-1' }))
+    })
+    const client = new ApiClient({ baseUrl: '/api/v1', fetcher })
+
+    await expect(client.getPilotSnapshot('workspace-1')).resolves.toEqual({
+      devices: [{ id: 'device-1' }],
+      alarms: [{ id: 'alarm-1' }],
+      cursor: 'pilot-cursor-1',
+    })
+    expect(fetcher).toHaveBeenCalledTimes(3)
+    expect(fetcher.mock.calls.map(([input]) => String(input))).not.toContain('/api/v1/commands')
+  })
 })

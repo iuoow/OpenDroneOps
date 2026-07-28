@@ -40,6 +40,19 @@ export class ApiClient {
     }
   }
 
+  async getPilotSnapshot(workspaceId: string) {
+    const [devices, alarms, events] = await Promise.all([
+      this.getPage<Device>('/devices', workspaceId),
+      this.getPage<Alarm>('/alarms?status=OPEN', workspaceId),
+      this.getPage<DomainEvent>('/events?limit=1', workspaceId),
+    ])
+    return {
+      devices: devices.items,
+      alarms: alarms.items,
+      cursor: events.next_cursor ?? '',
+    }
+  }
+
   async acknowledgeAlarm(workspaceId: string, alarmId: string) {
     return this.request<Alarm>(`/alarms/${encodeURIComponent(alarmId)}/acknowledge`, workspaceId, {
       method: 'POST',

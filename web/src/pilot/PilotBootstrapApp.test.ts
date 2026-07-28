@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { PilotRuntimeConfig } from './bridge'
 import PilotBootstrapApp from './PilotBootstrapApp.vue'
 import { BrowserMockPilotBridge } from './mockBridge'
+import { createPilotReadModel } from './readModel'
 
 const config: PilotRuntimeConfig = {
   workspaceId: 'field-workspace',
@@ -11,10 +12,19 @@ const config: PilotRuntimeConfig = {
   requiredModules: ['flight_status', 'alarm_feed'],
 }
 
+const makeReadModel = () =>
+  createPilotReadModel({
+    workspaceId: config.workspaceId,
+    apiBaseUrl: config.api.baseUrl,
+    websocketUrl: config.websocket.url,
+    demo: true,
+    now: () => Date.parse('2026-07-28T00:00:10Z'),
+  })
+
 describe('PilotBootstrapApp', () => {
   it('renders the touch-first shell only after the Mock Bridge is ready', async () => {
     const wrapper = mount(PilotBootstrapApp, {
-      props: { bridge: new BrowserMockPilotBridge(), config },
+      props: { bridge: new BrowserMockPilotBridge(), config, readModel: makeReadModel() },
     })
     await flushPromises()
 
@@ -26,7 +36,11 @@ describe('PilotBootstrapApp', () => {
 
   it('keeps the shell unavailable and exposes retry when the Mock Bridge is absent', async () => {
     const wrapper = mount(PilotBootstrapApp, {
-      props: { bridge: new BrowserMockPilotBridge({ available: false }), config },
+      props: {
+        bridge: new BrowserMockPilotBridge({ available: false }),
+        config,
+        readModel: makeReadModel(),
+      },
     })
     await flushPromises()
 
@@ -42,6 +56,7 @@ describe('PilotBootstrapApp', () => {
           licenseResult: { accepted: false, reason: 'LICENSE_REJECTED' },
         }),
         config,
+        readModel: makeReadModel(),
       },
     })
     await flushPromises()
@@ -53,11 +68,13 @@ describe('PilotBootstrapApp', () => {
 
   it('marks local navigation with an accessible pressed state', async () => {
     const wrapper = mount(PilotBootstrapApp, {
-      props: { bridge: new BrowserMockPilotBridge(), config },
+      props: { bridge: new BrowserMockPilotBridge(), config, readModel: makeReadModel() },
     })
     await flushPromises()
-    const alerts = wrapper.get('button:nth-child(3)')
+    const alerts = wrapper.findAll('nav button')[2]
+    expect(alerts).toBeDefined()
     await alerts.trigger('click')
     expect(alerts.attributes('aria-pressed')).toBe('true')
+    expect(wrapper.text()).toContain('现场告警')
   })
 })
