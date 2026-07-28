@@ -47,9 +47,9 @@
     {
       "id": "operating_sop",
       "title": "Operating and rollback SOP",
-      "status": "missing",
+      "status": "draft",
       "evidenceFile": "evidence/operating-sop.md",
-      "externalRecordRef": null,
+      "externalRecordRef": "ADR-0013; release-checklist",
       "requiredApprover": "Operations owner",
       "secretAllowed": false
     },
