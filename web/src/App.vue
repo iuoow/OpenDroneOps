@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import ConnectionIndicator from './components/ConnectionIndicator.vue'
+import AppIcon from './components/AppIcon.vue'
 import StatusBadge from './components/StatusBadge.vue'
 import { useOperationsStore } from './state/operations'
 
@@ -10,12 +11,12 @@ const store = useOperationsStore()
 const workspaceId = computed(() => String(route.params.workspaceId ?? store.workspaceId))
 
 const navigation = [
-  { label: '实时态势', short: 'OV', path: 'overview' },
-  { label: '设备管理', short: 'DV', path: 'devices' },
-  { label: '告警中心', short: 'AL', path: 'alarms' },
-  { label: '指令中心', short: 'CM', path: 'commands' },
-  { label: '轨迹回放', short: 'RP', path: 'replay' },
-  { label: '系统运行', short: 'OP', path: 'operations' },
+  { label: '实时态势', icon: 'overview' as const, path: 'overview' },
+  { label: '设备管理', icon: 'devices' as const, path: 'devices' },
+  { label: '告警中心', icon: 'alarms' as const, path: 'alarms' },
+  { label: '指令中心', icon: 'commands' as const, path: 'commands' },
+  { label: '轨迹回放', icon: 'replay' as const, path: 'replay' },
+  { label: '系统运行', icon: 'operations' as const, path: 'operations' },
 ]
 
 onMounted(() => store.hydrate(workspaceId.value))
@@ -62,7 +63,7 @@ onUnmounted(() => store.stopRealtime())
           :to="`/app/${workspaceId}/${item.path}`"
           :aria-label="item.label"
         >
-          <span class="nav-item__icon" aria-hidden="true">{{ item.short }}</span>
+          <span class="nav-item__icon" aria-hidden="true"><AppIcon :name="item.icon" :size="17" /></span>
           <span class="nav-item__label">{{ item.label }}</span>
         </RouterLink>
       </nav>
