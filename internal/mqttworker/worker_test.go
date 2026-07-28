@@ -92,6 +92,84 @@ func TestWorkerHasBoundedQueueAndRetriesTransientErrors(t *testing.T) {
 	close(blockedHandler.blockFirst)
 }
 
+func TestFairQueueRoundRobinsActiveKeys(t *testing.T) {
+	queue := newFairQueue(4, 3)
+	for _, message := range []struct {
+		key string
+		id  string
+	}{
+		{key: "gateway:hot", id: "h-1"},
+		{key: "gateway:hot", id: "h-2"},
+		{key: "gateway:cool", id: "c-1"},
+		{key: "gateway:hot", id: "h-3"},
+	} {
+		if err := queue.Enqueue(message.key, Message{DedupKey: message.id}); err != nil {
+			t.Fatalf("Enqueue(%q) error = %v", message.id, err)
+		}
+	}
+	var got []string
+	for range 4 {
+		message, ok := queue.Dequeue(context.Background())
+		if !ok {
+			t.Fatal("Dequeue() returned closed queue")
+		}
+		got = append(got, message.DedupKey)
+	}
+	want := []string{"h-1", "c-1", "h-2", "h-3"}
+	for index := range want {
+		if got[index] != want[index] {
+			t.Fatalf("fair dequeue order = %v, want %v", got, want)
+		}
+	}
+}
+
+func TestWorkerRejectsHotKeyWithoutPoisoningDeduplication(t *testing.T) {
+	handler := newBlockingOrderHandler("h-1")
+	observer := &recordingCapacityObserver{}
+	worker, err := New(Config{
+		ShardCount: 1, QueueSize: 4, MaxPendingPerKey: 1, CapacityObserver: observer,
+	}, handler, NewMemoryDeduplicator(), &MemoryQuarantine{})
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	if err := worker.Start(context.Background()); err != nil {
+		t.Fatalf("Start() error = %v", err)
+	}
+	defer worker.Close()
+	first := workerMessage("h-1")
+	second := workerMessage("h-2")
+	third := workerMessage("h-3")
+	if err := worker.Enqueue(context.Background(), first); err != nil {
+		t.Fatalf("first enqueue error = %v", err)
+	}
+	select {
+	case <-handler.started:
+	case <-time.After(time.Second):
+		t.Fatal("first message was not started")
+	}
+	if err := worker.Enqueue(context.Background(), second); err != nil {
+		t.Fatalf("second enqueue error = %v", err)
+	}
+	if err := worker.Enqueue(context.Background(), third); !errors.Is(err, ErrHotKeyBackpressure) {
+		t.Fatalf("third enqueue error = %v, want hot-key backpressure", err)
+	}
+	if stats := worker.Stats(); stats.HotKeyBackpressure != 1 || stats.QueueFull != 0 {
+		t.Fatalf("Stats() = %+v, want one hot-key rejection", stats)
+	}
+	if !observer.has("mqtt_ingestion", "hot_key_limit") {
+		t.Fatalf("capacity events = %v", observer.events)
+	}
+	close(handler.release)
+	waitFor(t, func() bool { return handler.count() == 2 })
+	if err := worker.Enqueue(context.Background(), third); err != nil {
+		t.Fatalf("retry after backpressure error = %v", err)
+	}
+	waitFor(t, func() bool { return handler.count() == 3 })
+	if got := handler.order(); got[2] != "h-3" {
+		t.Fatalf("retried message was not handled: %v", got)
+	}
+}
+
 func TestWorkerCloseRejectsNewMessages(t *testing.T) {
 	worker, err := New(Config{ShardCount: 1, QueueSize: 1}, &recordingHandler{}, NewMemoryDeduplicator(), &MemoryQuarantine{})
 	if err != nil {
@@ -135,6 +213,70 @@ type recordingHandler struct {
 	transientFailures int
 	blockFirst        chan struct{}
 	permanentFailure  bool
+}
+
+type blockingOrderHandler struct {
+	blockTID string
+	started  chan struct{}
+	release  chan struct{}
+	once     sync.Once
+	mu       sync.Mutex
+	tids     []string
+}
+
+func newBlockingOrderHandler(blockTID string) *blockingOrderHandler {
+	return &blockingOrderHandler{blockTID: blockTID, started: make(chan struct{}), release: make(chan struct{})}
+}
+
+func (h *blockingOrderHandler) Handle(_ context.Context, message Message) error {
+	tid := message.Parsed.Envelope.TID
+	h.mu.Lock()
+	h.tids = append(h.tids, tid)
+	h.mu.Unlock()
+	if tid == h.blockTID {
+		h.once.Do(func() { close(h.started) })
+		<-h.release
+	}
+	return nil
+}
+
+func (h *blockingOrderHandler) count() int {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return len(h.tids)
+}
+
+func (h *blockingOrderHandler) order() []string {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return append([]string(nil), h.tids...)
+}
+
+type recordingCapacityObserver struct {
+	mu     sync.Mutex
+	events []string
+}
+
+func (o *recordingCapacityObserver) RecordCapacityEvent(component, outcome string) {
+	o.mu.Lock()
+	o.events = append(o.events, component+":"+outcome)
+	o.mu.Unlock()
+}
+
+func (o *recordingCapacityObserver) has(component, outcome string) bool {
+	want := component + ":" + outcome
+	o.mu.Lock()
+	defer o.mu.Unlock()
+	for _, event := range o.events {
+		if event == want {
+			return true
+		}
+	}
+	return false
+}
+
+func workerMessage(tid string) RawMessage {
+	return RawMessage{Topic: "thing/product/GW-1/events", Payload: []byte(`{"gateway":"GW-1","tid":"` + tid + `","bid":"b-` + tid + `","method":"sim/event","data":{}}`)}
 }
 
 func (h *recordingHandler) Handle(_ context.Context, _ Message) error {

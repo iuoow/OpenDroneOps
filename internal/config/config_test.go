@@ -27,7 +27,7 @@ func TestLoadUsesDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load() error = %v", err)
 	}
-	if cfg.HTTPAddr != ":8080" || cfg.WebSocketSendQueueSize != 256 || cfg.WebSocketMaxSessionsPerWorkspace != 64 || cfg.WebSocketMaxDeviceFilters != 100 {
+	if cfg.HTTPAddr != ":8080" || cfg.WebSocketSendQueueSize != 256 || cfg.WebSocketMaxSessionsPerWorkspace != 64 || cfg.WebSocketMaxDeviceFilters != 100 || cfg.MQTTMaxPendingPerKey != 64 {
 		t.Fatalf("unexpected defaults: %+v", cfg)
 	}
 }
@@ -41,6 +41,13 @@ func TestLoadRejectsNonPositiveCapacityLimits(t *testing.T) {
 	_, err := Load()
 	if err == nil || !strings.Contains(err.Error(), "capacity limits") {
 		t.Fatalf("expected capacity limit validation error, got %v", err)
+	}
+
+	t.Setenv("WS_MAX_SESSIONS_PER_WORKSPACE", "64")
+	t.Setenv("MQTT_MAX_PENDING_PER_KEY", "0")
+	_, err = Load()
+	if err == nil || !strings.Contains(err.Error(), "capacity limits") {
+		t.Fatalf("expected MQTT key capacity validation error, got %v", err)
 	}
 }
 

@@ -27,7 +27,7 @@ time, complete its validation record, then commit before starting the next task.
 | 19 | Consent-first diagnostic UX and Pilot quality gate | Complete |
 | 20 | Real Pilot 2 integration and authorized hardware-validation gate | Blocked: requires DJI credentials, supported model, authorized hardware, and security SOP; see `docs/development/validation/TASK20_GATE_READINESS.md` and `docs/development/gates/task20/` |
 | 21 | Capacity and quota contract | Complete; see `docs/architecture/21-capacity-and-quota-contract.md` and `docs/development/validation/TASK21_VALIDATION.md` |
-| 22 | Fairness, backpressure, and hot-key isolation | Planned |
+| 22 | Fairness, backpressure, and hot-key isolation | Complete; see `docs/architecture/22-fairness-backpressure-and-hot-keys.md` and `docs/development/validation/TASK22_VALIDATION.md` |
 | 23 | Multi-instance realtime delivery and recovery | Planned |
 | 24 | Load, fault, and capacity verification harness | Planned |
 | 25 | Release automation and operational delivery | Planned |

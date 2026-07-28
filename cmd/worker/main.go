@@ -24,7 +24,8 @@ func main() {
 	quarantine := &mqttworker.MemoryQuarantine{}
 	ingestion, err := mqttworker.New(mqttworker.Config{
 		ShardCount: cfg.MQTTShardCount, QueueSize: cfg.MQTTShardQueueSize,
-		OnError: func(err error) { logger.Error("mqtt worker error", "error", err) },
+		MaxPendingPerKey: cfg.MQTTMaxPendingPerKey,
+		OnError:          func(err error) { logger.Error("mqtt worker error", "error", err) },
 	}, logHandler{logger: logger}, mqttworker.NewMemoryDeduplicator(), quarantine)
 	if err != nil {
 		logger.Error("worker configuration error", "error", err)

@@ -29,6 +29,7 @@ type Config struct {
 	WebSocketMaxDeviceFilters        int
 	MQTTShardCount                   int
 	MQTTShardQueueSize               int
+	MQTTMaxPendingPerKey             int
 }
 
 func Load() (Config, error) {
@@ -51,6 +52,7 @@ func Load() (Config, error) {
 		WebSocketMaxDeviceFilters:        integer("WS_MAX_DEVICE_FILTERS", 100),
 		MQTTShardCount:                   integer("MQTT_SHARD_COUNT", 32),
 		MQTTShardQueueSize:               integer("MQTT_SHARD_QUEUE_SIZE", 1024),
+		MQTTMaxPendingPerKey:             integer("MQTT_MAX_PENDING_PER_KEY", 64),
 	}
 	if err := cfg.Validate(); err != nil {
 		return Config{}, err
@@ -72,7 +74,7 @@ func (c Config) Validate() error {
 	if len(missing) > 0 {
 		return fmt.Errorf("missing required configuration: %v", missing)
 	}
-	if c.WebSocketSendQueueSize < 1 || c.WebSocketMaxSessionsPerWorkspace < 1 || c.WebSocketMaxDeviceFilters < 1 || c.MQTTShardCount < 1 || c.MQTTShardQueueSize < 1 {
+	if c.WebSocketSendQueueSize < 1 || c.WebSocketMaxSessionsPerWorkspace < 1 || c.WebSocketMaxDeviceFilters < 1 || c.MQTTShardCount < 1 || c.MQTTShardQueueSize < 1 || c.MQTTMaxPendingPerKey < 1 {
 		return errors.New("capacity limits, queues, and shard sizes must be positive")
 	}
 	if c.MQTTKeepAlive <= 0 || c.MQTTSessionExpiry <= 0 || c.RawMessageRetention <= 0 {
