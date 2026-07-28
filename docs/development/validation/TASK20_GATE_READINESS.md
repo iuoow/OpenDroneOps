@@ -5,7 +5,9 @@
 Task 20 remains **Blocked**. The repository is ready for a later controlled
 implementation, but the external authorization gate is not satisfied. This
 record is a preflight checklist, not evidence that real DJI/Pilot 2 support is
-available.
+available. The maintainable machine-readable registry and evidence templates
+live under `docs/development/gates/task20/`; validate them with
+`pwsh -NoProfile -File scripts/validate-pilot2-gate.ps1`.
 
 No credentials, license files, device serial numbers, private URLs, or
 hardware-identifying details belong in this repository. Evidence should be

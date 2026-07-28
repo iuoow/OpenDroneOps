@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "gateId": "task20-real-pilot2",
+  "overallStatus": "blocked",
+  "lastReviewedOn": "2026-07-28",
+  "reviewEveryDays": 30,
+  "technicalOwner": "TBD",
+  "approver": "TBD",
+  "evidenceDirectory": "docs/development/gates/task20/evidence",
+  "items": [
+    {
+      "id": "supported_model",
+      "title": "Supported model and firmware",
+      "status": "missing",
+      "evidenceFile": "evidence/supported-model.md",
+      "externalRecordRef": null,
+      "requiredApprover": "DJI compatibility owner",
+      "secretAllowed": false
+    },
+    {
+      "id": "credentials_license",
+      "title": "Credentials and license process",
+      "status": "missing",
+      "evidenceFile": "evidence/credentials-license.md",
+      "externalRecordRef": null,
+      "requiredApprover": "Security owner",
+      "secretAllowed": false
+    },
+    {
+      "id": "authorized_lab",
+      "title": "Authorized hardware and isolated lab",
+      "status": "missing",
+      "evidenceFile": "evidence/authorized-lab.md",
+      "externalRecordRef": null,
+      "requiredApprover": "Field owner",
+      "secretAllowed": false
+    },
+    {
+      "id": "security_privacy",
+      "title": "Security and privacy review",
+      "status": "draft",
+      "evidenceFile": "evidence/security-privacy.md",
+      "externalRecordRef": "ADR-0013; TASK19_VALIDATION",
+      "requiredApprover": "Security and privacy reviewer",
+      "secretAllowed": false
+    },
+    {
+      "id": "operating_sop",
+      "title": "Operating and rollback SOP",
+      "status": "missing",
+      "evidenceFile": "evidence/operating-sop.md",
+      "externalRecordRef": null,
+      "requiredApprover": "Operations owner",
+      "secretAllowed": false
+    },
+    {
+      "id": "command_drc_approval",
+      "title": "Separate Command/DRC approval",
+      "status": "missing",
+      "evidenceFile": "evidence/command-drc-approval.md",
+      "externalRecordRef": null,
+      "requiredApprover": "Flight-safety approver",
+      "secretAllowed": false
+    }
+  ],
+  "repositoryEvidence": [
+    "docs/decisions/0013-pilot-shell-foundation-before-real-dji.md",
+    "docs/development/validation/TASK19_VALIDATION.md",
+    "docs/development/validation/TASK20_GATE_READINESS.md"
+  ]
+}

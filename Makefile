@@ -1,6 +1,6 @@
 SHELL := sh
 
-.PHONY: fmt lint test test-race build web-install web-typecheck web-test web-build compose-config run-server
+.PHONY: fmt lint test test-race build web-install web-typecheck web-test web-build compose-config run-server check-pilot2-gate
 
 fmt:
 	go fmt ./...
@@ -34,3 +34,6 @@ compose-config:
 
 run-server:
 	go run ./cmd/server
+
+check-pilot2-gate:
+	pwsh -NoProfile -File scripts/validate-pilot2-gate.ps1
