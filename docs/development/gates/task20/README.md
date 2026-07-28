@@ -35,3 +35,7 @@ SOP, and Command/DRC approvals remain `missing`.
 Each file in `evidence/` is a fillable record with an owner, decision,
 external-record reference, expiry/review date, and explicit no-secret reminder.
 They are templates until the corresponding external record is supplied.
+
+The hardware-independent conformance evaluator lives in
+`web/src/pilot/readiness.ts`. Its tests are a preparation aid only; passing
+them never changes `overallStatus` and never authorizes real hardware.

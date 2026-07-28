@@ -56,3 +56,7 @@ hidden host calls.
 
 Until step 1 is complete, the correct action is to keep Task 20 blocked and
 continue using the simulator and browser Mock Bridge.
+
+Task 20A provides a hardware-independent readiness evaluator and conformance
+tests so a later approved adapter can fail closed on the same gate decisions.
+Task 20A does not reduce or bypass any of the six external requirements.

@@ -27,6 +27,10 @@ time, complete its validation record, then commit before starting the next task.
 | 19 | Consent-first diagnostic UX and Pilot quality gate | Complete |
 | 20 | Real Pilot 2 integration and authorized hardware-validation gate | Blocked: requires DJI credentials, supported model, authorized hardware, and security SOP; see `docs/development/validation/TASK20_GATE_READINESS.md` and `docs/development/gates/task20/` |
 
+Task 20A is a completed preparation subtask: it adds a hardware-independent
+readiness/capability evaluator and conformance tests. It does not count Task 20
+as complete and does not authorize real hardware, credentials, commands, or DRC.
+
 Validation reports live in `docs/development/validation/` and use a matching
 `TASKx_VALIDATION.md` name. Later tasks must not import private Codex prompts or
 rely on removed workspace files.
