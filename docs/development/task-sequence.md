@@ -24,7 +24,7 @@ time, complete its validation record, then commit before starting the next task.
 | 16 | Touch-first, high-contrast Pilot shell and bootstrap UX | Complete |
 | 17 | Read-only Pilot Home with snapshot/WebSocket recovery | Complete |
 | 18 | Field continuity: reconnect UX and non-sensitive local drafts | Complete |
-| 19 | Consent-first diagnostic UX and Pilot quality gate | Planned |
+| 19 | Consent-first diagnostic UX and Pilot quality gate | Complete |
 | 20 | Real Pilot 2 integration and authorized hardware-validation gate | Blocked: requires DJI credentials, supported model, authorized hardware, and security SOP |
 
 Validation reports live in `docs/development/validation/` and use a matching

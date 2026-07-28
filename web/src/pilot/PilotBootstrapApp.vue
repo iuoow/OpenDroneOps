@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import type { PilotBridgeAdapter, PilotRuntimeConfig, PilotStartupState } from './bridge'
 import { bootstrapPilot } from './bootstrap'
+import type { PilotDiagnosticController, PilotDiagnosticState } from './diagnostics'
 import type { PilotDraft, PilotDraftStore } from './drafts'
 import type { PilotReadModel } from './readModel'
 
@@ -10,6 +11,7 @@ const props = defineProps<{
   config: PilotRuntimeConfig
   readModel: PilotReadModel
   draftStore: PilotDraftStore
+  diagnostics: PilotDiagnosticController
 }>()
 
 const state = ref<PilotStartupState>({ phase: 'detecting' })
@@ -68,6 +70,7 @@ const drafts = ref<readonly PilotDraft[]>(props.draftStore.list())
 const draftBody = ref('')
 const draftError = ref('')
 const draftNotice = ref('')
+const diagnosticState = computed(() => props.diagnostics.state.value)
 const cloudStatusClass = computed(() => ({
   'is-ready': connection.value === 'connected' && !dataStale.value,
   'is-warning': connection.value === 'connecting' || connection.value === 'recovering' || dataStale.value,
@@ -142,6 +145,23 @@ function discardDraft(id: string) {
   draftNotice.value = '草稿已从本机删除'
   draftError.value = ''
   refreshDrafts()
+}
+
+function diagnosticPhaseLabel(diagnostic: PilotDiagnosticState) {
+  switch (diagnostic.phase) {
+    case 'idle':
+      return '尚未开始'
+    case 'consent_required':
+      return '等待你的同意'
+    case 'preparing':
+      return '正在准备脱敏摘要'
+    case 'ready':
+      return '摘要已准备'
+    case 'cancelled':
+      return '已取消'
+    case 'failed':
+      return '准备失败，可重试'
+  }
 }
 
 function deviceTitle() {
@@ -345,6 +365,52 @@ function severityLabel(severity?: string) {
         <h2 id="pilot-more-title">只读现场模式</h2>
         <p>Bridge：{{ bridge.kind }} · 实时状态：{{ cloudStatusText }}</p>
         <p class="pilot-shell__readonly-note">真实 DJI、诊断上传、第三方应用和设备控制仍未启用。</p>
+        <div class="pilot-shell__diagnostic-panel" aria-labelledby="pilot-diagnostic-title">
+          <p class="pilot-shell__eyebrow">DIAGNOSTICS</p>
+          <h3 id="pilot-diagnostic-title">上传前先获得同意</h3>
+          <p>当前仅演示脱敏摘要流程，不读取文件、不展示路径、不上传日志。</p>
+          <p class="pilot-shell__diagnostic-status" data-testid="pilot-diagnostic-status" role="status">
+            {{ diagnosticPhaseLabel(diagnosticState) }}
+          </p>
+          <div v-if="diagnosticState.phase === 'consent_required'" class="pilot-shell__diagnostic-consent">
+            <p>同意后只会准备脱敏摘要；你可以随时取消，摘要也不会自动上传。</p>
+            <div class="pilot-shell__diagnostic-actions">
+              <button type="button" data-testid="pilot-diagnostic-accept" @click="diagnostics.accept">
+                同意并准备摘要
+              </button>
+              <button type="button" data-testid="pilot-diagnostic-cancel" @click="diagnostics.cancel">
+                取消
+              </button>
+            </div>
+          </div>
+          <div v-else-if="diagnosticState.phase === 'preparing'" class="pilot-shell__diagnostic-actions">
+            <button type="button" data-testid="pilot-diagnostic-cancel" @click="diagnostics.cancel">
+              取消准备
+            </button>
+          </div>
+          <div v-else-if="diagnosticState.phase === 'idle'" class="pilot-shell__diagnostic-actions">
+            <button type="button" data-testid="pilot-diagnostic-begin" @click="diagnostics.begin">
+              查看同意说明
+            </button>
+          </div>
+          <div v-else-if="diagnosticState.phase === 'failed'" class="pilot-shell__diagnostic-actions">
+            <p class="pilot-shell__diagnostic-error">脱敏摘要准备失败；未读取或上传任何文件。</p>
+            <button type="button" data-testid="pilot-diagnostic-retry" @click="diagnostics.retry">
+              重试
+            </button>
+          </div>
+          <div v-else-if="diagnosticState.phase === 'cancelled'" class="pilot-shell__diagnostic-actions">
+            <button type="button" data-testid="pilot-diagnostic-retry" @click="diagnostics.retry">
+              再次查看说明
+            </button>
+          </div>
+          <div v-else-if="diagnosticState.phase === 'ready'" class="pilot-shell__diagnostic-result">
+            <strong>已生成脱敏摘要</strong>
+            <span>编号：{{ diagnosticState.receipt.receiptId }}</span>
+            <span>项目数：{{ diagnosticState.receipt.itemCount }} · 已脱敏字段：{{ diagnosticState.receipt.redactedFields.length }}</span>
+            <button type="button" data-testid="pilot-diagnostic-reset" @click="diagnostics.reset">清除本次结果</button>
+          </div>
+        </div>
       </section>
     </section>
 

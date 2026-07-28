@@ -86,6 +86,17 @@ button { font: inherit; }
 .pilot-shell__draft-list strong { color: #fff; font-size: var(--font-md); line-height: 1.45; overflow-wrap: anywhere; }
 .pilot-shell__draft-list small, .pilot-shell__draft-empty { color: #bfdbfe; font-size: var(--font-sm); }
 .pilot-shell__draft-item-actions button:last-child { border-color: #fca5a5; background: #7f1d1d; }
+.pilot-shell__diagnostic-panel { display: grid; gap: var(--space-3); margin-top: var(--space-5); border-top: 1px solid #526e8b; padding-top: var(--space-5); }
+.pilot-shell__diagnostic-panel h3 { margin-top: var(--space-2); font-size: var(--font-xl); }
+.pilot-shell__diagnostic-panel > p:not(.pilot-shell__eyebrow), .pilot-shell__diagnostic-consent p { color: #dbeafe; font-size: var(--font-md); line-height: 1.5; }
+.pilot-shell__diagnostic-status { border-left: 3px solid #67e8f9; color: #f0f9ff; padding-left: var(--space-3); font-weight: 800; }
+.pilot-shell__diagnostic-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.pilot-shell__diagnostic-actions button, .pilot-shell__diagnostic-result button { min-height: 44px; border: 2px solid #bfdbfe; border-radius: var(--radius-md); background: #1d4ed8; color: #fff; padding: 0 var(--space-3); font-weight: 800; }
+.pilot-shell__diagnostic-actions button:last-child { border-color: #cbd5e1; background: transparent; }
+.pilot-shell__diagnostic-error { color: #fecaca !important; }
+.pilot-shell__diagnostic-result { display: grid; gap: var(--space-2); border: 1px solid #86efac; border-radius: var(--radius-md); background: #123b2a; color: #dcfce7; padding: var(--space-3); }
+.pilot-shell__diagnostic-result span { color: #bbf7d0; font-size: var(--font-sm); overflow-wrap: anywhere; }
+.pilot-shell__diagnostic-result button { justify-self: start; border-color: #bbf7d0; background: transparent; }
 .pilot-shell__detail-panel { border: 1px solid #5f7994; border-radius: var(--radius-lg); background: rgba(15, 32, 52, .92); padding: var(--space-5); }
 .pilot-shell__detail-panel h2 { margin-top: var(--space-2); font-size: var(--font-2xl); }
 .pilot-shell__detail-panel > p:not(.pilot-shell__eyebrow) { margin-top: var(--space-3); color: #dbeafe; font-size: var(--font-md); line-height: 1.55; }
@@ -119,4 +130,6 @@ button { font: inherit; }
   .pilot-shell__draft-actions button { width: 100%; }
   .pilot-shell__draft-item-actions { display: grid; grid-template-columns: 1fr 1fr; }
   .pilot-shell__draft-item-actions button { width: 100%; }
+  .pilot-shell__diagnostic-actions { align-items: stretch; flex-direction: column; }
+  .pilot-shell__diagnostic-actions button, .pilot-shell__diagnostic-result button { width: 100%; }
 }

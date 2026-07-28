@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { PilotRuntimeConfig } from './bridge'
 import PilotBootstrapApp from './PilotBootstrapApp.vue'
 import { BrowserMockPilotBridge } from './mockBridge'
+import { createBrowserMockDiagnosticRunner, createPilotDiagnosticController } from './diagnostics'
 import { createPilotDraftStore } from './drafts'
 import { createPilotReadModel } from './readModel'
 
@@ -31,6 +32,9 @@ const makeDraftStore = () => {
   })
 }
 
+const makeDiagnostics = () =>
+  createPilotDiagnosticController(createBrowserMockDiagnosticRunner(() => Date.parse('2026-07-28T00:00:30Z')))
+
 describe('PilotBootstrapApp', () => {
   it('renders the touch-first shell only after the Mock Bridge is ready', async () => {
     const wrapper = mount(PilotBootstrapApp, {
@@ -39,6 +43,7 @@ describe('PilotBootstrapApp', () => {
         config,
         readModel: makeReadModel(),
         draftStore: makeDraftStore(),
+        diagnostics: makeDiagnostics(),
       },
     })
     await flushPromises()
@@ -56,6 +61,7 @@ describe('PilotBootstrapApp', () => {
         config,
         readModel: makeReadModel(),
         draftStore: makeDraftStore(),
+        diagnostics: makeDiagnostics(),
       },
     })
     await flushPromises()
@@ -74,6 +80,7 @@ describe('PilotBootstrapApp', () => {
         config,
         readModel: makeReadModel(),
         draftStore: makeDraftStore(),
+        diagnostics: makeDiagnostics(),
       },
     })
     await flushPromises()
@@ -90,6 +97,7 @@ describe('PilotBootstrapApp', () => {
         config,
         readModel: makeReadModel(),
         draftStore: makeDraftStore(),
+        diagnostics: makeDiagnostics(),
       },
     })
     await flushPromises()
@@ -107,6 +115,7 @@ describe('PilotBootstrapApp', () => {
         config,
         readModel: makeReadModel(),
         draftStore: makeDraftStore(),
+        diagnostics: makeDiagnostics(),
       },
     })
     await flushPromises()
@@ -125,5 +134,27 @@ describe('PilotBootstrapApp', () => {
     )
     await draftActions[1].trigger('click')
     expect(wrapper.find('[data-testid="pilot-draft-list"]').exists()).toBe(false)
+  })
+
+  it('keeps diagnostics consent-first and cancellable in the More view', async () => {
+    const wrapper = mount(PilotBootstrapApp, {
+      props: {
+        bridge: new BrowserMockPilotBridge(),
+        config,
+        readModel: makeReadModel(),
+        draftStore: makeDraftStore(),
+        diagnostics: makeDiagnostics(),
+      },
+    })
+    await flushPromises()
+
+    await wrapper.findAll('nav button')[3].trigger('click')
+    expect(wrapper.get('[data-testid="pilot-diagnostic-status"]').text()).toContain('尚未开始')
+    await wrapper.get('[data-testid="pilot-diagnostic-begin"]').trigger('click')
+    expect(wrapper.get('[data-testid="pilot-diagnostic-status"]').text()).toContain('等待你的同意')
+    expect(wrapper.find('[data-testid="pilot-diagnostic-accept"]').exists()).toBe(true)
+    await wrapper.get('[data-testid="pilot-diagnostic-cancel"]').trigger('click')
+    expect(wrapper.get('[data-testid="pilot-diagnostic-status"]').text()).toContain('已取消')
+    expect(wrapper.text()).not.toContain('C:\\')
   })
 })

@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import PilotBootstrapApp from './PilotBootstrapApp.vue'
 import { type PilotRuntimeConfig } from './bridge'
 import { BrowserMockPilotBridge } from './mockBridge'
+import { createBrowserMockDiagnosticRunner, createPilotDiagnosticController } from './diagnostics'
 import { createPilotDraftStore } from './drafts'
 import { createPilotReadModel } from './readModel'
 import './styles.css'
@@ -27,4 +28,5 @@ createApp(PilotBootstrapApp, {
     demo: import.meta.env.VITE_DEMO_MODE !== 'false',
   }),
   draftStore: createPilotDraftStore(config.workspaceId),
+  diagnostics: createPilotDiagnosticController(createBrowserMockDiagnosticRunner()),
 }).mount('#pilot-app')
