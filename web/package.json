@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
@@ -19,6 +20,8 @@
     "vue-router": "5.2.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.12.1",
+    "@playwright/test": "1.62.0",
     "@types/node": "24.10.1",
     "@vitejs/plugin-vue": "6.0.4",
     "@vue/test-utils": "2.4.11",

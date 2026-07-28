@@ -40,6 +40,15 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: Upload browser diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-e2e-diagnostics
+          path: web/test-results/
+          if-no-files-found: ignore
 
   integration:
     runs-on: ubuntu-latest
