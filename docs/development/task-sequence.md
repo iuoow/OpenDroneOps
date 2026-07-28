@@ -25,7 +25,7 @@ time, complete its validation record, then commit before starting the next task.
 | 17 | Read-only Pilot Home with snapshot/WebSocket recovery | Complete |
 | 18 | Field continuity: reconnect UX and non-sensitive local drafts | Complete |
 | 19 | Consent-first diagnostic UX and Pilot quality gate | Complete |
-| 20 | Real Pilot 2 integration and authorized hardware-validation gate | Blocked: requires DJI credentials, supported model, authorized hardware, and security SOP |
+| 20 | Real Pilot 2 integration and authorized hardware-validation gate | Blocked: requires DJI credentials, supported model, authorized hardware, and security SOP; see `docs/development/validation/TASK20_GATE_READINESS.md` |
 
 Validation reports live in `docs/development/validation/` and use a matching
 `TASKx_VALIDATION.md` name. Later tasks must not import private Codex prompts or
