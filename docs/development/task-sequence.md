@@ -37,6 +37,7 @@ time, complete its validation record, then commit before starting the next task.
 | 29 | UI visual foundation and Overview v2 benchmark | Complete; see `docs/development/validation/TASK29_VALIDATION.md` |
 | 30 | Alarm triage and incident-handling experience | Complete; see `docs/development/validation/TASK30_VALIDATION.md` |
 | 31 | Command-center progress, evidence, and low-risk operation experience | Complete; see `docs/development/validation/TASK31_VALIDATION.md` |
+| 32 | Device inventory and evidence-first context experience | Complete; see `docs/development/validation/TASK32_VALIDATION.md` |
 
 Task 20A is a completed preparation subtask: it adds a hardware-independent
 readiness/capability evaluator and conformance tests. It does not count Task 20
