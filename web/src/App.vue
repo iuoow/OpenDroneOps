@@ -25,6 +25,7 @@ onUnmounted(() => store.stopRealtime())
 
 <template>
   <div class="app-shell">
+    <a class="skip-link" href="#main-content">跳至主内容</a>
     <header class="topbar">
       <RouterLink class="brand" to="/app/demo/overview" aria-label="OpenDroneOps 实时态势首页">
         <span class="brand__mark" aria-hidden="true">OD</span>
@@ -73,7 +74,7 @@ onUnmounted(() => store.stopRealtime())
       </div>
     </aside>
 
-    <main class="main-content">
+    <main id="main-content" class="main-content" tabindex="-1">
       <div v-if="store.error" class="global-notice" role="alert">
         <strong>快照加载失败</strong>
         <span>{{ store.error }}</span>
@@ -85,7 +86,7 @@ onUnmounted(() => store.stopRealtime())
     </main>
 
     <div class="sr-only" aria-live="polite">
-      {{ store.connection === 'recovering' ? '正在恢复实时数据' : '' }}
+      {{ store.connection === 'recovering' ? '正在恢复实时数据' : store.connection === 'disconnected' ? '实时连接已断开，当前快照可能已过期' : '' }}
     </div>
   </div>
 </template>
