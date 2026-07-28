@@ -5,6 +5,11 @@ import { BrowserMockPilotBridge } from './mockBridge'
 import { createBrowserMockDiagnosticRunner, createPilotDiagnosticController } from './diagnostics'
 import { createPilotDraftStore } from './drafts'
 import { createPilotReadModel } from './readModel'
+import {
+  assertPilotRuntimeAllowed,
+  createUnapprovedPilotEvidence,
+  evaluatePilotReadiness,
+} from './readiness'
 import './styles.css'
 
 const config: PilotRuntimeConfig = {
@@ -18,8 +23,16 @@ const config: PilotRuntimeConfig = {
   requiredModules: ['flight_status', 'alarm_feed', 'field_notes'],
 }
 
+const bridge = new BrowserMockPilotBridge()
+const readiness = evaluatePilotReadiness({
+  target: 'browser_mock',
+  evidence: createUnapprovedPilotEvidence(),
+  capabilities: { readOnly: true, commands: false, drc: false },
+})
+assertPilotRuntimeAllowed(bridge.kind, readiness)
+
 createApp(PilotBootstrapApp, {
-  bridge: new BrowserMockPilotBridge(),
+  bridge,
   config,
   readModel: createPilotReadModel({
     workspaceId: config.workspaceId,
@@ -29,4 +42,5 @@ createApp(PilotBootstrapApp, {
   }),
   draftStore: createPilotDraftStore(config.workspaceId),
   diagnostics: createPilotDiagnosticController(createBrowserMockDiagnosticRunner()),
+  readiness,
 }).mount('#pilot-app')

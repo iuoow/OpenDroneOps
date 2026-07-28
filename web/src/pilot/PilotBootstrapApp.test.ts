@@ -6,6 +6,7 @@ import { BrowserMockPilotBridge } from './mockBridge'
 import { createBrowserMockDiagnosticRunner, createPilotDiagnosticController } from './diagnostics'
 import { createPilotDraftStore } from './drafts'
 import { createPilotReadModel } from './readModel'
+import { createUnapprovedPilotEvidence, evaluatePilotReadiness } from './readiness'
 
 const config: PilotRuntimeConfig = {
   workspaceId: 'field-workspace',
@@ -35,6 +36,13 @@ const makeDraftStore = () => {
 const makeDiagnostics = () =>
   createPilotDiagnosticController(createBrowserMockDiagnosticRunner(() => Date.parse('2026-07-28T00:00:30Z')))
 
+const makeReadiness = () =>
+  evaluatePilotReadiness({
+    target: 'browser_mock',
+    evidence: createUnapprovedPilotEvidence(),
+    capabilities: { readOnly: true, commands: false, drc: false },
+  })
+
 describe('PilotBootstrapApp', () => {
   it('renders the touch-first shell only after the Mock Bridge is ready', async () => {
     const wrapper = mount(PilotBootstrapApp, {
@@ -44,6 +52,7 @@ describe('PilotBootstrapApp', () => {
         readModel: makeReadModel(),
         draftStore: makeDraftStore(),
         diagnostics: makeDiagnostics(),
+        readiness: makeReadiness(),
       },
     })
     await flushPromises()
@@ -62,6 +71,7 @@ describe('PilotBootstrapApp', () => {
         readModel: makeReadModel(),
         draftStore: makeDraftStore(),
         diagnostics: makeDiagnostics(),
+        readiness: makeReadiness(),
       },
     })
     await flushPromises()
@@ -81,6 +91,7 @@ describe('PilotBootstrapApp', () => {
         readModel: makeReadModel(),
         draftStore: makeDraftStore(),
         diagnostics: makeDiagnostics(),
+        readiness: makeReadiness(),
       },
     })
     await flushPromises()
@@ -98,6 +109,7 @@ describe('PilotBootstrapApp', () => {
         readModel: makeReadModel(),
         draftStore: makeDraftStore(),
         diagnostics: makeDiagnostics(),
+        readiness: makeReadiness(),
       },
     })
     await flushPromises()
@@ -116,6 +128,7 @@ describe('PilotBootstrapApp', () => {
         readModel: makeReadModel(),
         draftStore: makeDraftStore(),
         diagnostics: makeDiagnostics(),
+        readiness: makeReadiness(),
       },
     })
     await flushPromises()
@@ -144,11 +157,15 @@ describe('PilotBootstrapApp', () => {
         readModel: makeReadModel(),
         draftStore: makeDraftStore(),
         diagnostics: makeDiagnostics(),
+        readiness: makeReadiness(),
       },
     })
     await flushPromises()
 
     await wrapper.findAll('nav button')[3].trigger('click')
+    expect(wrapper.get('[data-testid="pilot-capability-guard"]').text()).toContain('浏览器 Mock · 只读')
+    expect(wrapper.get('[data-testid="pilot-capability-guard"]').text()).toContain('Command禁用')
+    expect(wrapper.get('[data-testid="pilot-capability-guard"]').text()).toContain('DRC禁用')
     expect(wrapper.get('[data-testid="pilot-diagnostic-status"]').text()).toContain('尚未开始')
     await wrapper.get('[data-testid="pilot-diagnostic-begin"]').trigger('click')
     expect(wrapper.get('[data-testid="pilot-diagnostic-status"]').text()).toContain('等待你的同意')

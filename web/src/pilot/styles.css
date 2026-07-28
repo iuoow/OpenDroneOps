@@ -86,6 +86,13 @@ button { font: inherit; }
 .pilot-shell__draft-list strong { color: #fff; font-size: var(--font-md); line-height: 1.45; overflow-wrap: anywhere; }
 .pilot-shell__draft-list small, .pilot-shell__draft-empty { color: #bfdbfe; font-size: var(--font-sm); }
 .pilot-shell__draft-item-actions button:last-child { border-color: #fca5a5; background: #7f1d1d; }
+.pilot-shell__capability-panel { display: grid; gap: var(--space-3); margin-top: var(--space-5); border: 1px solid #7aa1c7; border-radius: var(--radius-md); background: #0b1d31; padding: var(--space-4); }
+.pilot-shell__capability-panel h3 { margin-top: var(--space-1); font-size: var(--font-xl); }
+.pilot-shell__capability-panel dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); margin: 0; }
+.pilot-shell__capability-panel dl > div { border: 1px solid #526e8b; border-radius: var(--radius-md); padding: var(--space-3); }
+.pilot-shell__capability-panel dt { color: #b9d6ff; font-size: var(--font-sm); }
+.pilot-shell__capability-panel dd { margin: var(--space-1) 0 0; color: #fff; font-weight: 800; }
+.pilot-shell__capability-panel > p:not(.pilot-shell__eyebrow) { color: #dbeafe; font-size: var(--font-sm); line-height: 1.5; }
 .pilot-shell__diagnostic-panel { display: grid; gap: var(--space-3); margin-top: var(--space-5); border-top: 1px solid #526e8b; padding-top: var(--space-5); }
 .pilot-shell__diagnostic-panel h3 { margin-top: var(--space-2); font-size: var(--font-xl); }
 .pilot-shell__diagnostic-panel > p:not(.pilot-shell__eyebrow), .pilot-shell__diagnostic-consent p { color: #dbeafe; font-size: var(--font-md); line-height: 1.5; }
@@ -130,6 +137,7 @@ button { font: inherit; }
   .pilot-shell__draft-actions button { width: 100%; }
   .pilot-shell__draft-item-actions { display: grid; grid-template-columns: 1fr 1fr; }
   .pilot-shell__draft-item-actions button { width: 100%; }
+  .pilot-shell__capability-panel dl { grid-template-columns: 1fr; }
   .pilot-shell__diagnostic-actions { align-items: stretch; flex-direction: column; }
   .pilot-shell__diagnostic-actions button, .pilot-shell__diagnostic-result button { width: 100%; }
 }

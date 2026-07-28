@@ -31,6 +31,7 @@ export type PilotReadinessBlocker =
   | 'SECURITY_PRIVACY_NOT_APPROVED'
   | 'OPERATING_SOP_NOT_APPROVED'
   | 'COMMAND_DRC_NOT_APPROVED'
+  | 'BRIDGE_MODE_MISMATCH'
 
 export interface PilotReadinessDecision {
   allowed: boolean
@@ -67,5 +68,38 @@ export function evaluatePilotReadiness(input: PilotReadinessInput): PilotReadine
     allowed: true,
     mode: input.capabilities.commands || input.capabilities.drc ? 'pilot2_control' : 'pilot2_read_only',
     blockers: [],
+  }
+}
+
+export class PilotReadinessError extends Error {
+  readonly code = 'PILOT_READINESS_BLOCKED' as const
+
+  constructor(readonly blockers: readonly PilotReadinessBlocker[]) {
+    super('Pilot runtime target is blocked by the readiness gate')
+  }
+}
+
+export function assertPilotRuntimeAllowed(
+  bridgeKind: 'mock' | 'pilot2',
+  decision: PilotReadinessDecision,
+): void {
+  const expectedMode =
+    bridgeKind === 'mock'
+      ? decision.mode === 'mock'
+      : decision.mode === 'pilot2_read_only' || decision.mode === 'pilot2_control'
+  if (decision.allowed && expectedMode) return
+  throw new PilotReadinessError(
+    decision.blockers.length ? decision.blockers : ['BRIDGE_MODE_MISMATCH'],
+  )
+}
+
+export function createUnapprovedPilotEvidence(): PilotGateEvidence {
+  return {
+    supportedModel: 'missing',
+    credentialsLicense: 'missing',
+    authorizedLab: 'missing',
+    securityPrivacy: 'draft',
+    operatingSop: 'draft',
+    commandDrcApproval: 'missing',
   }
 }

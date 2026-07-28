@@ -39,3 +39,7 @@ They are templates until the corresponding external record is supplied.
 The hardware-independent conformance evaluator lives in
 `web/src/pilot/readiness.ts`. Its tests are a preparation aid only; passing
 them never changes `overallStatus` and never authorizes real hardware.
+
+Task 20B wires the evaluator into the browser Mock composition root and makes
+the active capability boundary visible in the Pilot More view. A Bridge/readiness
+mode mismatch fails closed before the application is mounted.

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { evaluatePilotReadiness, type PilotGateEvidence } from './readiness'
+import {
+  assertPilotRuntimeAllowed,
+  createUnapprovedPilotEvidence,
+  evaluatePilotReadiness,
+  PilotReadinessError,
+  type PilotGateEvidence,
+} from './readiness'
 
 const approvedEvidence: PilotGateEvidence = {
   supportedModel: 'approved',
@@ -104,5 +110,35 @@ describe('evaluatePilotReadiness', () => {
     })
 
     expect(decision).toEqual({ allowed: true, mode: 'pilot2_control', blockers: [] })
+  })
+
+  it('fails closed when bridge kind and readiness mode do not match', () => {
+    const mockDecision = evaluatePilotReadiness({
+      target: 'browser_mock',
+      evidence: createUnapprovedPilotEvidence(),
+      capabilities: readOnlyRequest,
+    })
+
+    expect(() => assertPilotRuntimeAllowed('mock', mockDecision)).not.toThrow()
+    expect(() => assertPilotRuntimeAllowed('pilot2', mockDecision)).toThrow(PilotReadinessError)
+    try {
+      assertPilotRuntimeAllowed('pilot2', mockDecision)
+    } catch (error) {
+      expect(error).toMatchObject({
+        code: 'PILOT_READINESS_BLOCKED',
+        blockers: ['BRIDGE_MODE_MISMATCH'],
+      })
+    }
+  })
+
+  it('keeps the repository default evidence explicitly unapproved', () => {
+    expect(createUnapprovedPilotEvidence()).toEqual({
+      supportedModel: 'missing',
+      credentialsLicense: 'missing',
+      authorizedLab: 'missing',
+      securityPrivacy: 'draft',
+      operatingSop: 'draft',
+      commandDrcApproval: 'missing',
+    })
   })
 })

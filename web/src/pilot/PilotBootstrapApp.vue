@@ -5,6 +5,7 @@ import { bootstrapPilot } from './bootstrap'
 import type { PilotDiagnosticController, PilotDiagnosticState } from './diagnostics'
 import type { PilotDraft, PilotDraftStore } from './drafts'
 import type { PilotReadModel } from './readModel'
+import type { PilotReadinessDecision } from './readiness'
 
 const props = defineProps<{
   bridge: PilotBridgeAdapter
@@ -12,6 +13,7 @@ const props = defineProps<{
   readModel: PilotReadModel
   draftStore: PilotDraftStore
   diagnostics: PilotDiagnosticController
+  readiness: PilotReadinessDecision
 }>()
 
 const state = ref<PilotStartupState>({ phase: 'detecting' })
@@ -71,6 +73,19 @@ const draftBody = ref('')
 const draftError = ref('')
 const draftNotice = ref('')
 const diagnosticState = computed(() => props.diagnostics.state.value)
+const readinessModeText = computed(() => {
+  switch (props.readiness.mode) {
+    case 'mock':
+      return '浏览器 Mock · 只读'
+    case 'pilot2_read_only':
+      return 'Pilot 2 · 只读'
+    case 'pilot2_control':
+      return 'Pilot 2 · 控制能力已审批'
+    case 'blocked':
+      return '运行目标已阻止'
+  }
+})
+const controlsEnabled = computed(() => props.readiness.mode === 'pilot2_control')
 const cloudStatusClass = computed(() => ({
   'is-ready': connection.value === 'connected' && !dataStale.value,
   'is-warning': connection.value === 'connecting' || connection.value === 'recovering' || dataStale.value,
@@ -365,6 +380,17 @@ function severityLabel(severity?: string) {
         <h2 id="pilot-more-title">只读现场模式</h2>
         <p>Bridge：{{ bridge.kind }} · 实时状态：{{ cloudStatusText }}</p>
         <p class="pilot-shell__readonly-note">真实 DJI、诊断上传、第三方应用和设备控制仍未启用。</p>
+        <div class="pilot-shell__capability-panel" data-testid="pilot-capability-guard">
+          <p class="pilot-shell__eyebrow">RUNTIME GUARD</p>
+          <h3>运行能力边界</h3>
+          <dl>
+            <div><dt>当前模式</dt><dd>{{ readinessModeText }}</dd></div>
+            <div><dt>真实 Pilot 2</dt><dd>{{ readiness.mode === 'mock' ? '未启用' : '已通过运行时检查' }}</dd></div>
+            <div><dt>Command</dt><dd>{{ controlsEnabled ? '已审批' : '禁用' }}</dd></div>
+            <div><dt>DRC</dt><dd>{{ controlsEnabled ? '已审批' : '禁用' }}</dd></div>
+          </dl>
+          <p>运行目标与 Bridge 能力不一致时，Pilot 会拒绝启动，不会自动降级或绕过准入门槛。</p>
+        </div>
         <div class="pilot-shell__diagnostic-panel" aria-labelledby="pilot-diagnostic-title">
           <p class="pilot-shell__eyebrow">DIAGNOSTICS</p>
           <h3 id="pilot-diagnostic-title">上传前先获得同意</h3>

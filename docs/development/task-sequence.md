@@ -30,6 +30,8 @@ time, complete its validation record, then commit before starting the next task.
 Task 20A is a completed preparation subtask: it adds a hardware-independent
 readiness/capability evaluator and conformance tests. It does not count Task 20
 as complete and does not authorize real hardware, credentials, commands, or DRC.
+Task 20B is also complete: it wires that evaluator into the browser Mock
+composition root and exposes the fail-closed capability state in the Pilot UI.
 
 Validation reports live in `docs/development/validation/` and use a matching
 `TASKx_VALIDATION.md` name. Later tasks must not import private Codex prompts or
