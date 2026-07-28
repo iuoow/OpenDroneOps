@@ -96,6 +96,18 @@ describe('PilotReadModel', () => {
     context.model.stop()
   })
 
+  it('supports an explicit reconnect without submitting or mutating field data', async () => {
+    const context = setup()
+    await context.model.hydrate()
+
+    await context.model.reconnect()
+
+    expect(context.realtime.disconnect).toHaveBeenCalled()
+    expect(context.client.getPilotSnapshot).toHaveBeenCalledTimes(2)
+    expect(context.model).not.toHaveProperty('submitDraft')
+    context.model.stop()
+  })
+
   it('ignores older device versions and cross-workspace events', async () => {
     const context = setup()
     await context.model.hydrate()

@@ -2,12 +2,14 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import type { PilotBridgeAdapter, PilotRuntimeConfig, PilotStartupState } from './bridge'
 import { bootstrapPilot } from './bootstrap'
+import type { PilotDraft, PilotDraftStore } from './drafts'
 import type { PilotReadModel } from './readModel'
 
 const props = defineProps<{
   bridge: PilotBridgeAdapter
   config: PilotRuntimeConfig
   readModel: PilotReadModel
+  draftStore: PilotDraftStore
 }>()
 
 const state = ref<PilotStartupState>({ phase: 'detecting' })
@@ -62,6 +64,10 @@ const dataError = computed(() => props.readModel.error.value)
 const dataStale = computed(() => props.readModel.stale.value)
 const connection = computed(() => props.readModel.connection.value)
 const connectionDetail = computed(() => props.readModel.connectionDetail.value)
+const drafts = ref<readonly PilotDraft[]>(props.draftStore.list())
+const draftBody = ref('')
+const draftError = ref('')
+const draftNotice = ref('')
 const cloudStatusClass = computed(() => ({
   'is-ready': connection.value === 'connected' && !dataStale.value,
   'is-warning': connection.value === 'connecting' || connection.value === 'recovering' || dataStale.value,
@@ -106,6 +112,37 @@ async function start() {
 
 onMounted(() => void start())
 onUnmounted(() => props.readModel.stop())
+
+function refreshDrafts() {
+  drafts.value = props.draftStore.list()
+}
+
+function saveDraft() {
+  draftError.value = ''
+  draftNotice.value = ''
+  try {
+    props.draftStore.save({ deviceId: currentDevice.value?.id, body: draftBody.value })
+    draftBody.value = ''
+    draftNotice.value = '草稿已保存在本机，不会自动提交到云端'
+    refreshDrafts()
+  } catch (error) {
+    draftError.value = error instanceof Error ? error.message : '草稿无法保存'
+  }
+}
+
+function retryDraft(draft: PilotDraft) {
+  draftBody.value = draft.body
+  draftNotice.value = '草稿已载入编辑区；请确认后重新保存'
+  draftError.value = ''
+  activeNavigation.value = 'home'
+}
+
+function discardDraft(id: string) {
+  props.draftStore.remove(id)
+  draftNotice.value = '草稿已从本机删除'
+  draftError.value = ''
+  refreshDrafts()
+}
 
 function deviceTitle() {
   return currentDevice.value?.product_model || currentDevice.value?.serial_number || '暂无设备'
@@ -194,7 +231,14 @@ function severityLabel(severity?: string) {
         <strong v-else-if="connection === 'recovering'">正在从恢复游标继续实时数据</strong>
         <strong v-else>当前数据可能已陈旧</strong>
         <span v-if="connectionDetail">{{ connectionDetail }}</span>
-        <button v-if="dataError" type="button" @click="readModel.hydrate">重新加载快照</button>
+        <button
+          v-if="!dataLoading"
+          type="button"
+          data-testid="pilot-reconnect"
+          @click="readModel.reconnect"
+        >
+          重新连接并刷新
+        </button>
       </div>
 
       <div class="pilot-shell__task-card">
@@ -228,6 +272,44 @@ function severityLabel(severity?: string) {
           <small>仅供查看；Pilot Shell 不确认或关闭告警。</small>
         </article>
       </div>
+
+      <section v-if="activeNavigation === 'home'" class="pilot-shell__draft-panel" aria-labelledby="pilot-drafts-title">
+        <div>
+          <p class="pilot-shell__eyebrow">FIELD NOTE</p>
+          <h2 id="pilot-drafts-title">现场备注草稿</h2>
+          <p class="pilot-shell__draft-copy">
+            仅保存在本机，用于断线期间的现场连续性；不会自动提交，也不能包含凭据或诊断路径。
+          </p>
+        </div>
+        <label class="pilot-shell__draft-label" for="pilot-draft-body">备注内容</label>
+        <textarea
+          id="pilot-draft-body"
+          data-testid="pilot-draft-body"
+          v-model="draftBody"
+          class="pilot-shell__draft-input"
+          maxlength="500"
+          rows="3"
+          placeholder="例如：北侧风况变化，待网络恢复后复核"
+        ></textarea>
+        <div class="pilot-shell__draft-actions">
+          <button type="button" data-testid="pilot-save-draft" @click="saveDraft">保存本机草稿</button>
+          <span v-if="draftNotice" class="pilot-shell__draft-notice" role="status">{{ draftNotice }}</span>
+          <span v-if="draftError" class="pilot-shell__draft-error" role="alert">{{ draftError }}</span>
+        </div>
+        <ul v-if="drafts.length" class="pilot-shell__draft-list" data-testid="pilot-draft-list">
+          <li v-for="draft in drafts" :key="draft.id">
+            <div>
+              <strong>{{ draft.body }}</strong>
+              <small>{{ new Date(draft.updatedAt).toLocaleString('zh-CN') }}</small>
+            </div>
+            <div class="pilot-shell__draft-item-actions">
+              <button type="button" @click="retryDraft(draft)">重试编辑</button>
+              <button type="button" @click="discardDraft(draft.id)">删除</button>
+            </div>
+          </li>
+        </ul>
+        <p v-else class="pilot-shell__draft-empty">暂无本机草稿</p>
+      </section>
 
       <section v-else-if="activeNavigation === 'device'" class="pilot-shell__detail-panel" aria-labelledby="pilot-device-title">
         <p class="pilot-shell__eyebrow">DEVICE DETAIL</p>

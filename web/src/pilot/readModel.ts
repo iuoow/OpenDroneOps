@@ -35,6 +35,7 @@ export interface PilotReadModel {
   readonly lastSyncAt: DeepReadonly<Ref<string | null>>
   readonly stale: ComputedRef<boolean>
   hydrate(): Promise<void>
+  reconnect(): Promise<void>
   stop(): void
 }
 
@@ -102,6 +103,11 @@ export function createPilotReadModel(options: PilotReadModelOptions): PilotReadM
     } finally {
       loading.value = false
     }
+  }
+
+  async function reconnect() {
+    stop()
+    await hydrate()
   }
 
   function startRealtime() {
@@ -189,6 +195,7 @@ export function createPilotReadModel(options: PilotReadModelOptions): PilotReadM
     lastSyncAt: readonly(lastSyncAt),
     stale,
     hydrate,
+    reconnect,
     stop,
   }
 }

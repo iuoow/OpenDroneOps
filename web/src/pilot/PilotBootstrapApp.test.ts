@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { PilotRuntimeConfig } from './bridge'
 import PilotBootstrapApp from './PilotBootstrapApp.vue'
 import { BrowserMockPilotBridge } from './mockBridge'
+import { createPilotDraftStore } from './drafts'
 import { createPilotReadModel } from './readModel'
 
 const config: PilotRuntimeConfig = {
@@ -21,10 +22,24 @@ const makeReadModel = () =>
     now: () => Date.parse('2026-07-28T00:00:10Z'),
   })
 
+const makeDraftStore = () => {
+  const values = new Map<string, string>()
+  return createPilotDraftStore(config.workspaceId, {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key),
+  })
+}
+
 describe('PilotBootstrapApp', () => {
   it('renders the touch-first shell only after the Mock Bridge is ready', async () => {
     const wrapper = mount(PilotBootstrapApp, {
-      props: { bridge: new BrowserMockPilotBridge(), config, readModel: makeReadModel() },
+      props: {
+        bridge: new BrowserMockPilotBridge(),
+        config,
+        readModel: makeReadModel(),
+        draftStore: makeDraftStore(),
+      },
     })
     await flushPromises()
 
@@ -40,6 +55,7 @@ describe('PilotBootstrapApp', () => {
         bridge: new BrowserMockPilotBridge({ available: false }),
         config,
         readModel: makeReadModel(),
+        draftStore: makeDraftStore(),
       },
     })
     await flushPromises()
@@ -57,6 +73,7 @@ describe('PilotBootstrapApp', () => {
         }),
         config,
         readModel: makeReadModel(),
+        draftStore: makeDraftStore(),
       },
     })
     await flushPromises()
@@ -68,7 +85,12 @@ describe('PilotBootstrapApp', () => {
 
   it('marks local navigation with an accessible pressed state', async () => {
     const wrapper = mount(PilotBootstrapApp, {
-      props: { bridge: new BrowserMockPilotBridge(), config, readModel: makeReadModel() },
+      props: {
+        bridge: new BrowserMockPilotBridge(),
+        config,
+        readModel: makeReadModel(),
+        draftStore: makeDraftStore(),
+      },
     })
     await flushPromises()
     const alerts = wrapper.findAll('nav button')[2]
@@ -76,5 +98,32 @@ describe('PilotBootstrapApp', () => {
     await alerts.trigger('click')
     expect(alerts.attributes('aria-pressed')).toBe('true')
     expect(wrapper.text()).toContain('现场告警')
+  })
+
+  it('saves, retries, and discards a local draft without submission controls', async () => {
+    const wrapper = mount(PilotBootstrapApp, {
+      props: {
+        bridge: new BrowserMockPilotBridge(),
+        config,
+        readModel: makeReadModel(),
+        draftStore: makeDraftStore(),
+      },
+    })
+    await flushPromises()
+
+    await wrapper.get('[data-testid="pilot-draft-body"]').setValue('北侧风况变化，待网络恢复后复核')
+    await wrapper.get('[data-testid="pilot-save-draft"]').trigger('click')
+
+    expect(wrapper.get('[data-testid="pilot-draft-list"]').text()).toContain('北侧风况变化')
+    expect(wrapper.text()).toContain('不会自动提交')
+    expect(wrapper.find('button[data-testid="pilot-submit-draft"]').exists()).toBe(false)
+
+    const draftActions = wrapper.findAll('.pilot-shell__draft-item-actions button')
+    await draftActions[0].trigger('click')
+    expect((wrapper.get('[data-testid="pilot-draft-body"]').element as HTMLTextAreaElement).value).toContain(
+      '北侧风况变化',
+    )
+    await draftActions[1].trigger('click')
+    expect(wrapper.find('[data-testid="pilot-draft-list"]').exists()).toBe(false)
   })
 })
