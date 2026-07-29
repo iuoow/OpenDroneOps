@@ -45,6 +45,7 @@ time, complete its validation record, then commit before starting the next task.
 | 37 | Browser E2E critical paths and visual/accessibility diagnostics | Complete; see `docs/development/validation/TASK37_VALIDATION.md` and `docs/development/ui-e2e-quality-gate.md` |
 | 38 | Pilot Browser Mock E2E and touch-first quality gate | Complete; see `docs/development/validation/TASK38_VALIDATION.md` and `docs/development/ui-e2e-quality-gate.md` |
 | 39 | Release experience acceptance, documentation handoff, and bundle budget gate | Complete; see `docs/development/validation/TASK39_VALIDATION.md`, `docs/development/release-demo-guide.md`, and `docs/development/contributor-validation.md` |
+| 40 | Public README and contributor onboarding handoff | Complete; see `docs/development/validation/TASK40_VALIDATION.md` and `README.md` |
 
 Task 20A is a completed preparation subtask: it adds a hardware-independent
 readiness/capability evaluator and conformance tests. It does not count Task 20
