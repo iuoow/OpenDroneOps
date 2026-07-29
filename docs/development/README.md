@@ -6,6 +6,8 @@ the project without exposing local Codex workspace prompts.
 - Dependency and licensing decisions: `dependencies.md` and `license-decision.md`
 - Per-task validation: `validation/`
 - Frontend work breakdown: `uiux-tasks.md`
+- Release demo and experience acceptance: `release-demo-guide.md`
+- Pull request and local validation checklist: `contributor-validation.md`
 - Pilot Shell Foundation plan: `pilot-shell-foundation-plan.md`
 - Current task order and scope: `../architecture/14-roadmap.md`
 

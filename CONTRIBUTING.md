@@ -1,5 +1,9 @@
 # Contributing
 
+Before opening a pull request, follow the complete public checklist in
+`docs/development/contributor-validation.md`. It records the required quality
+commands, PR evidence, dependency record, and safety boundaries.
+
 - 阅读 `AGENTS.md`；
 - 大变更先写 ADR；
 - 协议变更附 DJI 官方文档来源；

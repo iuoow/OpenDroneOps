@@ -9,6 +9,7 @@ export default defineConfig({
     host: '127.0.0.1',
   },
   build: {
+    manifest: true,
     rollupOptions: {
       input: {
         operations: fileURLToPath(new URL('./index.html', import.meta.url)),

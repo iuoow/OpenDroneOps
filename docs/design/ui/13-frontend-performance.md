@@ -54,4 +54,20 @@ GeoJSON clustering、当前视野、轨迹简化、批量更新和 Worker；表�
 
 ## 测量
 
+## Automated bundle gate
+
+Task 39 turns the two independently deployable initial JavaScript budgets into
+CI checks. `npm run build` emits the Vite manifest, then `npm run
+check:bundle` follows each entry's static `imports` recursively and sums the
+gzip bytes of the resulting JavaScript chunks.
+
+- Operations entry (`index.html`): at most 250 KiB gzip.
+- Pilot entry (`pilot.html`): at most 200 KiB gzip.
+
+Dynamic imports are intentionally excluded: they are not initial-load costs and
+must be assessed with the route or feature that requests them. The historical
+"Overview extra" guidance remains a design constraint until Overview-specific
+assets are split into a separately measurable dynamic entry. The gate itself
+is covered by `npm run test:bundle` and runs in CI after every production build.
+
 Lighthouse 只作实验室参考；使用 `web-vitals` 上报真实用户，并按桌面/Pilot、网络、设备和规模拆分。性能回归进入 CI。

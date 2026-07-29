@@ -8,8 +8,10 @@
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:bundle": "node --test scripts/check-bundle-budget.test.mjs",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "check:bundle": "node scripts/check-bundle-budget.mjs",
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
